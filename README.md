@@ -42,7 +42,9 @@ npm run seed
 npm run dev
 ```
 
-The standard local database initialization command is `npx prisma db push`. In the restricted sandbox used to verify this repository, the Prisma schema engine did not run reliably, so verification used the checked-in SQL initializer instead:
+The standard local database initialization command is `npx prisma db push`.
+
+The restricted sandbox uses `npm run db:init` because its Prisma schema engine does not run reliably:
 
 ```sh
 npm run db:init
