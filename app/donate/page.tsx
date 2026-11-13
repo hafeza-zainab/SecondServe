@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { FOOD_TYPES, ROLES } from "../../lib/constants";
 import { getActingOrganization } from "../../lib/acting-as";
+import { ClaimLikelihoodPreview } from "../../components/claim-likelihood-preview";
 import {
   createListing as createListingService,
   ListingServiceError
@@ -126,6 +127,8 @@ export default async function DonatePage({ searchParams }: DonatePageProps) {
           Pickup location
           <input name="locationText" required className="rounded border p-2" />
         </label>
+
+        <ClaimLikelihoodPreview />
 
         {actingOrganization?.role === ROLES.DONOR && (
           <button type="submit" className="rounded bg-black px-4 py-2 text-white">
