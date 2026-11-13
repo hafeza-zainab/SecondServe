@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "../../lib/db";
 import { CLAIMED, EXPIRED, OPEN, ROLES } from "../../lib/constants";
 import { predictClaimProbability } from "../../lib/predict";
+import { formatIst } from "../../lib/time";
 
 type ListingsPageProps = {
   searchParams: Promise<{
@@ -137,7 +138,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
                     <p>{listing.foodType} · {listing.quantityKg} kg</p>
                     <p>Donated by {listing.donor.name} · {listing.donor.area}</p>
                     <p>Pickup: {listing.locationText}</p>
-                    <p>Pickup deadline: {listing.pickupEnd.toLocaleString()}</p>
+                    <p>Pickup deadline: {formatIst(listing.pickupEnd)}</p>
                     {claimProbability !== null && (
                       <>
                         <p>Likely to be claimed: {Math.round(claimProbability * 100)}%</p>

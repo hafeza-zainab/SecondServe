@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { prisma } from "../../lib/db";
 import { CLAIMED, PICKED_UP, ROLES } from "../../lib/constants";
+import { formatIst } from "../../lib/time";
 
 export const dynamic = "force-dynamic";
 
@@ -152,7 +153,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                     <td className="p-3">{claim.listing.title}</td>
                     <td className="p-3">{claim.listing.quantityKg} kg</td>
                     <td className="p-3">{claim.ngo.name}</td>
-                    <td className="p-3">{claim.claimedAt.toLocaleString()}</td>
+                    <td className="p-3">{formatIst(claim.claimedAt)}</td>
                     <td className="p-3">
                       {claim.listing.status === PICKED_UP ? (
                         <span>Picked up</span>

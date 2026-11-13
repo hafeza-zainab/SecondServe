@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { prisma } from "../../lib/db";
 import { FOOD_TYPES, OPEN, ROLES } from "../../lib/constants";
+import { parseIstLocal } from "../../lib/time";
 
 type DonatePageProps = {
   searchParams: Promise<{
@@ -41,8 +42,14 @@ async function createListing(formData: FormData) {
     redirect("/donate?error=quantity");
   }
 
-  const pickupStart = new Date(pickupStartValue);
-  const pickupEnd = new Date(pickupEndValue);
+  let pickupStart: Date;
+  let pickupEnd: Date;
+  try {
+    pickupStart = parseIstLocal(pickupStartValue);
+    pickupEnd = parseIstLocal(pickupEndValue);
+  } catch {
+    redirect("/donate?error=date");
+  }
   if (
     Number.isNaN(pickupStart.getTime()) ||
     Number.isNaN(pickupEnd.getTime())
