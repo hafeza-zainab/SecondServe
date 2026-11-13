@@ -48,7 +48,7 @@ The standard local database initialization command is `npx prisma db push`. In t
 npm run db:init
 ```
 
-`DATABASE_URL` defaults to `file:./dev.db`; `.env.example` contains that value. The seed creates clearly labelled sample organizations and listings and skips if organizations already exist.
+`DATABASE_URL` defaults to `file:./dev.db`; `.env.example` contains that value. The seed creates 5 sample organizations, 18 sample listings (10 `PICKED_UP`, 3 `CLAIMED`, 3 `OPEN`, and 2 `EXPIRED`), and 13 claims; it skips if organizations already exist.
 
 ## Tests and model scripts
 
