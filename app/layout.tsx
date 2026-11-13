@@ -30,6 +30,7 @@ export default async function RootLayout({
                 <a className="underline-offset-4 hover:underline" href="/donate">Donate</a>
                 <a className="underline-offset-4 hover:underline" href="/listings">Listings</a>
                 <a className="underline-offset-4 hover:underline" href="/dashboard">Dashboard</a>
+                <a className="underline-offset-4 hover:underline" href="/my">My activity</a>
                 <a className="underline-offset-4 hover:underline" href="/model">Model</a>
                 <a className="underline-offset-4 hover:underline" href="/about">About</a>
               </nav>

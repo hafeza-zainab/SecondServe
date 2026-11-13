@@ -7,6 +7,7 @@ const routes = [
   ["/donate", "Post a food listing"],
   ["/listings", "Available listings"],
   ["/dashboard", "Impact dashboard"],
+  ["/my", "My listings"],
   ["/model", "Claim-likelihood model"],
   ["/about", "About SecondServe"]
 ] as const;

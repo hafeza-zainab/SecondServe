@@ -299,6 +299,21 @@ test("a non-owning DONOR cannot mark another organization's claim picked up", as
   assert.equal(unchanged.claim?.pickedUpAt, null);
 });
 
+test("an NGO cannot mark a donor listing picked up", async () => {
+  const donor = await createOrganization(ROLES.DONOR);
+  const ngo = await createOrganization(ROLES.NGO);
+  const listing = await createListing(donor.id, CLAIMED);
+  await prisma.claim.create({ data: { listingId: listing.id, ngoId: ngo.id } });
+
+  assert.equal(await markPickedUp(listing.id, ngo.id), "Not owner");
+  const unchanged = await prisma.listing.findUniqueOrThrow({
+    where: { id: listing.id },
+    include: { claim: true }
+  });
+  assert.equal(unchanged.status, CLAIMED);
+  assert.equal(unchanged.claim?.pickedUpAt, null);
+});
+
 test("pickup rejects missing or unknown acting organization IDs", async () => {
   const donor = await createOrganization(ROLES.DONOR);
   const ngo = await createOrganization(ROLES.NGO);
