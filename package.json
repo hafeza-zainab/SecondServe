@@ -14,6 +14,7 @@
     "test": "tsx --test tests/time.test.ts tests/metrics.test.ts tests/predict.test.ts",
     "test:db": "tsx scripts/test-db.ts",
     "smoke": "tsx scripts/smoke.ts",
+    "reseed": "tsx scripts/reseed.ts",
     "db:init": "tsx scripts/apply-schema.ts"
   },
   "dependencies": {
