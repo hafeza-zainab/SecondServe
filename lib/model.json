@@ -49,5 +49,25 @@
   ],
   "bias": 0.28292135579580097,
   "heldOutAccuracy": 0.6416666666666667,
-  "heldOutRows": 480
+  "heldOutRows": 480,
+  "metadata": {
+    "heldOutAccuracy": 0.6416666666666667,
+    "majorityClassBaselineAccuracy": 0.5520833333333334,
+    "featureNames": [
+      "food_bakery",
+      "food_cooked_meals",
+      "food_produce",
+      "quantity_kg",
+      "quantity_midrange",
+      "hours_until_pickup_end",
+      "hours_log",
+      "cooked_short_deadline",
+      "pickup_start_sin",
+      "pickup_start_cos"
+    ],
+    "datasetDescription": "2,400 generated sample rows with food type, quantity, hours until pickup end, pickup start hour, and a synthetic claim label; generated from seeded patterns with added noise.",
+    "trainingSeed": 93017,
+    "dataSeed": 20261113,
+    "heldOutRows": 480
+  }
 }

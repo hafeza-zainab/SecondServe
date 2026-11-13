@@ -1,5 +1,4 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import modelJson from "./model.json";
 
 type ClaimModel = {
   means: number[];
@@ -15,9 +14,7 @@ export type ClaimPredictionInput = {
   pickupEnd: Date | string;
 };
 
-const model = JSON.parse(
-  readFileSync(join(process.cwd(), "lib/model.json"), "utf8")
-) as ClaimModel;
+const model = modelJson as ClaimModel;
 
 function sigmoid(value: number) {
   if (value < -35) return 0;
@@ -31,10 +28,20 @@ export function predictClaimProbability(
 ): number {
   const pickupStart = new Date(listing.pickupStart);
   const pickupEnd = new Date(listing.pickupEnd);
+  const pickupStartParts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Kolkata",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23"
+  }).formatToParts(pickupStart);
+  const pickupStartValues = Object.fromEntries(
+    pickupStartParts.map(({ type, value }) => [type, value])
+  );
   const pickupStartHour =
-    pickupStart.getHours() +
-    pickupStart.getMinutes() / 60 +
-    pickupStart.getSeconds() / 3600;
+    Number(pickupStartValues.hour) +
+    Number(pickupStartValues.minute) / 60 +
+    Number(pickupStartValues.second) / 3600;
   const hoursUntilPickupEnd = Math.max(
     0,
     (pickupEnd.getTime() - now.getTime()) / (60 * 60 * 1000)

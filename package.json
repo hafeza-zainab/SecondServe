@@ -10,7 +10,12 @@
     "postinstall": "prisma generate",
     "seed": "tsx prisma/seed.ts",
     "gen-data": "tsx scripts/generate-synthetic.ts",
-    "train": "tsx scripts/train.ts"
+    "train": "tsx scripts/train.ts",
+    "test": "tsx --test tests/time.test.ts tests/metrics.test.ts tests/predict.test.ts",
+    "test:db": "tsx scripts/test-db.ts",
+    "smoke": "tsx scripts/smoke.ts",
+    "reseed": "tsx scripts/reseed.ts",
+    "db:init": "tsx scripts/apply-schema.ts"
   },
   "dependencies": {
     "@prisma/adapter-libsql": "^7.10.1",

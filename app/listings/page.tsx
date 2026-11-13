@@ -2,6 +2,16 @@ import { redirect } from "next/navigation";
 import { prisma } from "../../lib/db";
 import { CLAIMED, EXPIRED, OPEN, ROLES } from "../../lib/constants";
 import { predictClaimProbability } from "../../lib/predict";
+import { formatIst } from "../../lib/time";
+import { SubmitButton } from "../../components/submit-button";
+import {
+  getActingOrganization,
+  getActingOrganizationId
+} from "../../lib/acting-as";
+import {
+  claimListing as claimListingService,
+  expireOverdueListings
+} from "../../lib/services/listings";
 
 type ListingsPageProps = {
   searchParams: Promise<{
@@ -13,58 +23,20 @@ async function claimListing(formData: FormData) {
   "use server";
 
   const listingId = String(formData.get("listingId") ?? "").trim();
-  const ngoId = String(formData.get("ngoId") ?? "").trim();
-  if (!listingId || !ngoId) {
-    redirect("/listings?message=choose-ngo");
-  }
-
-  const ngo = await prisma.organization.findUnique({
-    where: { id: ngoId },
-    select: { role: true }
-  });
-  if (!ngo || ngo.role !== ROLES.NGO) {
+  const actingOrganizationId = await getActingOrganizationId();
+  if (!listingId) {
     redirect("/listings?message=invalid-ngo");
   }
 
-  try {
-    const claimed = await prisma.$transaction(async (tx) => {
-      const now = new Date();
-      const updated = await tx.listing.updateMany({
-        where: {
-          id: listingId,
-          status: OPEN,
-          pickupEnd: { gt: now }
-        },
-        data: { status: CLAIMED }
-      });
-
-      if (updated.count === 0) {
-        return false;
-      }
-
-      await tx.claim.create({
-        data: {
-          listingId,
-          ngoId
-        }
-      });
-      return true;
-    });
-
-    redirect(
-      claimed ? "/listings?message=claimed" : "/listings?message=already-claimed"
-    );
-  } catch (error) {
-    if (
-      typeof error === "object" &&
-      error !== null &&
-      "code" in error &&
-      error.code === "P2002"
-    ) {
-      redirect("/listings?message=already-claimed");
-    }
-    throw error;
+  const result = await claimListingService(listingId, actingOrganizationId);
+  if (result === "Invalid NGO") {
+    redirect("/listings?message=invalid-ngo");
   }
+  redirect(
+    result === "Claimed"
+      ? "/listings?message=claimed"
+      : "/listings?message=already-claimed"
+  );
 }
 
 const messages: Record<string, { text: string; role: "status" | "alert" }> = {
@@ -81,7 +53,9 @@ const messages: Record<string, { text: string; role: "status" | "alert" }> = {
 };
 
 export default async function ListingsPage({ searchParams }: ListingsPageProps) {
-  const [{ message }, [listings, ngos]] = await Promise.all([
+  await expireOverdueListings();
+  const now = new Date();
+  const [{ message }, [foundListings, actingOrganization]] = await Promise.all([
     searchParams,
     Promise.all([
       prisma.listing.findMany({
@@ -91,14 +65,17 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
         },
         orderBy: { pickupEnd: "asc" }
       }),
-      prisma.organization.findMany({
-        where: { role: ROLES.NGO },
-        orderBy: { name: "asc" },
-        select: { id: true, name: true }
-      })
+      getActingOrganization()
     ])
   ]);
-  const now = new Date();
+  const listings = [...foundListings].sort((left, right) => {
+    const leftExpired = left.status === EXPIRED || left.pickupEnd <= now;
+    const rightExpired = right.status === EXPIRED || right.pickupEnd <= now;
+    if (leftExpired !== rightExpired) {
+      return leftExpired ? 1 : -1;
+    }
+    return left.pickupEnd.getTime() - right.pickupEnd.getTime();
+  });
   const resultMessage = message ? messages[message] : undefined;
 
   return (
@@ -129,7 +106,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
                     <p>{listing.foodType} · {listing.quantityKg} kg</p>
                     <p>Donated by {listing.donor.name} · {listing.donor.area}</p>
                     <p>Pickup: {listing.locationText}</p>
-                    <p>Pickup deadline: {listing.pickupEnd.toLocaleString()}</p>
+                    <p>Pickup deadline: {formatIst(listing.pickupEnd)}</p>
                     {claimProbability !== null && (
                       <>
                         <p>Likely to be claimed: {Math.round(claimProbability * 100)}%</p>
@@ -139,33 +116,13 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
                   </div>
                   {expired ? (
                     <p className="font-medium" role="status">Expired</p>
-                  ) : (
+                  ) : actingOrganization?.role === ROLES.NGO ? (
                     <form action={claimListing} className="grid min-w-56 gap-2">
                       <input type="hidden" name="listingId" value={listing.id} />
-                      <label className="grid gap-1">
-                        Claiming NGO
-                        <select
-                          name="ngoId"
-                          required
-                          defaultValue=""
-                          className="rounded border p-2"
-                          disabled={ngos.length === 0}
-                        >
-                          <option value="" disabled>Select an NGO</option>
-                          {ngos.map((ngo) => (
-                            <option key={ngo.id} value={ngo.id}>{ngo.name}</option>
-                          ))}
-                        </select>
-                      </label>
-                      <button
-                        type="submit"
-                        disabled={ngos.length === 0}
-                        className="rounded bg-black px-4 py-2 text-white disabled:opacity-50"
-                      >
-                        Claim
-                      </button>
-                      {ngos.length === 0 && <p>No NGO organizations are available.</p>}
+                      <SubmitButton pendingText="Claiming…">Claim</SubmitButton>
                     </form>
+                  ) : (
+                    <p>Switch to an NGO to claim this listing.</p>
                   )}
                 </div>
               </li>

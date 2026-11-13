@@ -136,6 +136,11 @@ for (const row of holdout) {
   if ((prediction >= 0.5 ? 1 : 0) === row.claimed) correct += 1;
 }
 const accuracy = correct / holdout.length;
+const positiveCount = training.filter((row) => row.claimed === 1).length;
+const negativeCount = training.length - positiveCount;
+const majorityClass = positiveCount >= negativeCount ? 1 : 0;
+const baselineCorrect = holdout.filter((row) => row.claimed === majorityClass).length;
+const baselineAccuracy = baselineCorrect / holdout.length;
 
 const model = {
   featureNames: FEATURE_NAMES,
@@ -144,11 +149,24 @@ const model = {
   weights,
   bias,
   heldOutAccuracy: accuracy,
-  heldOutRows: holdout.length
+  heldOutRows: holdout.length,
+  metadata: {
+    heldOutAccuracy: accuracy,
+    majorityClassBaselineAccuracy: baselineAccuracy,
+    featureNames: FEATURE_NAMES,
+    datasetDescription:
+      "2,400 generated sample rows with food type, quantity, hours until pickup end, pickup start hour, and a synthetic claim label; generated from seeded patterns with added noise.",
+    trainingSeed: 93017,
+    dataSeed: 20261113,
+    heldOutRows: holdout.length
+  }
 };
 
 writeFileSync(MODEL_PATH, `${JSON.stringify(model, null, 2)}\n`, "utf8");
 console.log(
   `Held-out accuracy: ${(accuracy * 100).toFixed(2)}% (${correct}/${holdout.length})`
+);
+console.log(
+  `Majority-class baseline accuracy: ${(baselineAccuracy * 100).toFixed(2)}% (${baselineCorrect}/${holdout.length})`
 );
 console.log(`Saved model to ${MODEL_PATH}`);
