@@ -4,7 +4,10 @@ import { CLAIMED, EXPIRED, OPEN, PICKED_UP, ROLES } from "../../lib/constants";
 import { formatIst } from "../../lib/time";
 import { SubmitButton } from "../../components/submit-button";
 import { getActingOrganization, getActingOrganizationId } from "../../lib/acting-as";
-import { markPickedUp as markPickedUpService } from "../../lib/services/listings";
+import {
+  expireOverdueListings,
+  markPickedUp as markPickedUpService
+} from "../../lib/services/listings";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +34,7 @@ const messages: Record<string, string> = {
 };
 
 export default async function MyPage({ searchParams }: MyPageProps) {
+  await expireOverdueListings();
   const [{ message }, actingOrganization] = await Promise.all([
     searchParams,
     getActingOrganization()

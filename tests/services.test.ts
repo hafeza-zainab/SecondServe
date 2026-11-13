@@ -2,7 +2,7 @@ import "./helpers/require-test-db";
 import assert from "node:assert/strict";
 import { after, beforeEach, test } from "node:test";
 import { prisma } from "../lib/db";
-import { CLAIMED, EXPIRED, OPEN, PICKED_UP, ROLES } from "../lib/constants";
+import { CLAIMED, EXPIRED, OPEN, PICKED_UP, ROLES, UNCOLLECTED } from "../lib/constants";
 import {
   claimListing,
   createListing as createListingService,
@@ -281,6 +281,48 @@ test("markPickedUp sets status and pickedUpAt once and rejects a repeat", async 
   assert.equal(secondRead.pickedUpAt?.getTime(), firstRead.claim.pickedUpAt.getTime());
 });
 
+test("markPickedUp rejects an UNCOLLECTED listing and preserves its claim", async () => {
+  const donor = await createOrganization(ROLES.DONOR);
+  const ngo = await createOrganization(ROLES.NGO);
+  const listing = await createListing(donor.id, UNCOLLECTED);
+  await prisma.claim.create({ data: { listingId: listing.id, ngoId: ngo.id } });
+
+  assert.equal(
+    await markPickedUp(listing.id, donor.id),
+    "Already picked up or not claimed"
+  );
+  const saved = await prisma.listing.findUniqueOrThrow({
+    where: { id: listing.id },
+    include: { claim: true }
+  });
+  assert.equal(saved.status, UNCOLLECTED);
+  assert.ok(saved.claim);
+  assert.equal(saved.claim.pickedUpAt, null);
+});
+
+test("a pickup attempt expires a claim more than two hours overdue before pickup", async () => {
+  const donor = await createOrganization(ROLES.DONOR);
+  const ngo = await createOrganization(ROLES.NGO);
+  const listing = await createListing(
+    donor.id,
+    CLAIMED,
+    new Date(Date.now() - 2 * 60 * 60 * 1000 - 1)
+  );
+  await prisma.claim.create({ data: { listingId: listing.id, ngoId: ngo.id } });
+
+  assert.equal(
+    await markPickedUp(listing.id, donor.id),
+    "Already picked up or not claimed"
+  );
+  const saved = await prisma.listing.findUniqueOrThrow({
+    where: { id: listing.id },
+    include: { claim: true }
+  });
+  assert.equal(saved.status, UNCOLLECTED);
+  assert.ok(saved.claim);
+  assert.equal(saved.claim.pickedUpAt, null);
+});
+
 test("a non-owning DONOR cannot mark another organization's claim picked up", async () => {
   const donor = await createOrganization(ROLES.DONOR);
   const otherDonor = await prisma.organization.create({
@@ -380,4 +422,33 @@ test("expiry flips only overdue OPEN listings", async () => {
   assert.equal(statusById.get(futureOpen.id), OPEN);
   assert.equal(statusById.get(overdueClaimed.id), CLAIMED);
   assert.equal(statusById.get(alreadyExpired.id), EXPIRED);
+});
+
+test("expiry marks claimed listings UNCOLLECTED only more than two hours after pickupEnd", async () => {
+  const donor = await createOrganization(ROLES.DONOR);
+  const ngo = await createOrganization(ROLES.NGO);
+  const now = new Date("2026-11-13T12:00:00.000Z");
+  const exactBoundary = await createListing(
+    donor.id,
+    CLAIMED,
+    new Date(now.getTime() - 2 * 60 * 60 * 1000)
+  );
+  const beyondBoundary = await createListing(
+    donor.id,
+    CLAIMED,
+    new Date(now.getTime() - 2 * 60 * 60 * 1000 - 1)
+  );
+  await prisma.claim.create({ data: { listingId: exactBoundary.id, ngoId: ngo.id } });
+  await prisma.claim.create({ data: { listingId: beyondBoundary.id, ngoId: ngo.id } });
+
+  assert.equal(await expireOverdueListings(now), 1);
+  const saved = await prisma.listing.findMany({
+    where: { id: { in: [exactBoundary.id, beyondBoundary.id] } },
+    include: { claim: true }
+  });
+  const byId = new Map(saved.map((listing) => [listing.id, listing]));
+  assert.equal(byId.get(exactBoundary.id)?.status, CLAIMED);
+  assert.equal(byId.get(beyondBoundary.id)?.status, UNCOLLECTED);
+  assert.ok(byId.get(exactBoundary.id)?.claim);
+  assert.ok(byId.get(beyondBoundary.id)?.claim);
 });

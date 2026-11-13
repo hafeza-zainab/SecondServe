@@ -14,20 +14,27 @@ Facts below are verifiable in this repository.
 - Pages: `/`, `/donate`, `/listings`, `/dashboard`, `/my`, `/model`, and `/about`.
 - Health endpoint: `/api/health`.
 
+## Sample seed
+
+- 5 organizations, 19 listings, and 14 claims.
+- Listing statuses: 10 `PICKED_UP`, 3 `CLAIMED`, 3 `OPEN`, 2 `EXPIRED`, and 1 `UNCOLLECTED`.
+
 ## Dashboard metric definitions
 
 - `kg picked up`: sum of `quantityKg` for `PICKED_UP` listings.
-- `kg posted`: sum of `quantityKg` for final-state listings (`PICKED_UP` and `EXPIRED`).
-- `Rescue rate`: picked-up kg divided by kg posted; shown as unavailable when kg posted is zero.
+- `kg with a final outcome`: sum of `quantityKg` for `PICKED_UP`, `EXPIRED`, and `UNCOLLECTED` listings.
+- `Rescue rate`: picked-up kg divided by kg with a final outcome; `UNCOLLECTED` is denominator-only, and a zero denominator is shown as unavailable.
+- `kg claimed but not collected`: sum of `quantityKg` for `UNCOLLECTED` listings.
 - `Meals equivalent`: picked-up kg divided by `MEAL_KG` (0.4 kg); labelled “estimate, assumption not measured”.
-- Claim rate: `CLAIMED` plus `PICKED_UP` listing count divided by counts in `CLAIMED`, `PICKED_UP`, and `EXPIRED` states.
+- Claim rate: `CLAIMED`, `PICKED_UP`, and `UNCOLLECTED` listing count divided by counts in `CLAIMED`, `PICKED_UP`, `EXPIRED`, and `UNCOLLECTED` states.
+- Expiry: overdue `OPEN` listings become `EXPIRED`; `CLAIMED` listings more than two hours past `pickupEnd` become `UNCOLLECTED`, retaining their claim row and rejecting pickup confirmation.
 - Median time to claim: median duration from `Listing.createdAt` to `Claim.claimedAt`.
 - Seven-day pickup totals: `PICKED_UP` kg bucketed by Asia/Kolkata calendar day using `Claim.pickedUpAt`.
 
 ## Verification counts
 
 - Pure Node test suite: 17 tests (`npm test`).
-- Isolated Prisma service test suite: 17 tests (`npm run test:db`); it initializes `test.db` through `npm run db:init`.
+- Isolated Prisma service test suite: 20 tests (`npm run test:db`); it initializes `test.db` through `npm run db:init`.
 - The pure suite was run with both `TZ=UTC` and `TZ=Asia/Kolkata`.
 
 ## Synthetic predictor

@@ -2,6 +2,7 @@ export const OPEN = "OPEN";
 export const CLAIMED = "CLAIMED";
 export const PICKED_UP = "PICKED_UP";
 export const EXPIRED = "EXPIRED";
+export const UNCOLLECTED = "UNCOLLECTED";
 
 export const ROLES = {
   DONOR: "DONOR",

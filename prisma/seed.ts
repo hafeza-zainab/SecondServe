@@ -1,5 +1,5 @@
 import { prisma } from "../lib/db";
-import { CLAIMED, EXPIRED, OPEN, PICKED_UP, ROLES } from "../lib/constants";
+import { CLAIMED, EXPIRED, OPEN, PICKED_UP, ROLES, UNCOLLECTED } from "../lib/constants";
 
 const IST_OFFSET_MS = (5 * 60 + 30) * 60 * 1000;
 
@@ -202,6 +202,27 @@ async function main() {
           }
         });
       }
+
+      const uncollectedListing = await tx.listing.create({
+        data: {
+          donorId: canteen.id,
+          createdAt: hoursFromNow(-48),
+          title: "Uncollected vegetable curry trays (sample)",
+          foodType: "Cooked meals",
+          quantityKg: 16.5,
+          pickupStart: hoursFromNow(-12),
+          pickupEnd: hoursFromNow(-10),
+          locationText: "Greenfield Canteen sample pickup point",
+          status: UNCOLLECTED
+        }
+      });
+      await tx.claim.create({
+        data: {
+          listingId: uncollectedListing.id,
+          ngoId: foodLink.id,
+          claimedAt: hoursFromNow(-11)
+        }
+      });
 
       await tx.listing.create({
         data: {

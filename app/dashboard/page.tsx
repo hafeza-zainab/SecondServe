@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { prisma } from "../../lib/db";
-import { CLAIMED, PICKED_UP, ROLES } from "../../lib/constants";
+import { CLAIMED, PICKED_UP, ROLES, UNCOLLECTED } from "../../lib/constants";
 import { formatIst } from "../../lib/time";
 import { calculateImpactMetrics } from "../../lib/metrics";
 import { MEAL_KG } from "../../lib/project-info";
@@ -123,11 +123,11 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           </p>
         </article>
         <article className="rounded border p-5">
-          <h2 className="text-sm">kg posted</h2>
+          <h2 className="text-sm">kg with a final outcome</h2>
           <p className="mt-2 text-3xl font-semibold">
-            {metrics.kgPosted.toLocaleString(undefined, { maximumFractionDigits: 2 })} kg
+            {metrics.kgWithFinalOutcome.toLocaleString(undefined, { maximumFractionDigits: 2 })} kg
           </p>
-          <p className="mt-1 text-sm text-slate-600">Final-state listings only: picked up or expired.</p>
+          <p className="mt-1 text-sm text-slate-600">Picked up, expired, or claimed but not collected.</p>
         </article>
         <article className="rounded border p-5">
           <h2 className="text-sm">Rescue rate</h2>
@@ -147,6 +147,12 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           <h2 className="text-sm">kg claimed, awaiting pickup</h2>
           <p className="mt-2 text-3xl font-semibold">
             {metrics.claimedKg.toLocaleString(undefined, { maximumFractionDigits: 2 })} kg
+          </p>
+        </article>
+        <article className="rounded border p-5">
+          <h2 className="text-sm">kg claimed but not collected</h2>
+          <p className="mt-2 text-3xl font-semibold">
+            {metrics.uncollectedKg.toLocaleString(undefined, { maximumFractionDigits: 2 })} kg
           </p>
         </article>
         <article className="rounded border p-5">
@@ -226,6 +232,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                     <td className="p-3">
                       {claim.listing.status === PICKED_UP ? (
                         <span>Picked up</span>
+                      ) : claim.listing.status === UNCOLLECTED ? (
+                        <span>Not collected</span>
                       ) : claim.listing.status === CLAIMED ? (
                         actingOrganization?.role === ROLES.DONOR &&
                         actingOrganization.id === claim.listing.donorId ? (

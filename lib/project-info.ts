@@ -1,4 +1,4 @@
-import { EXPIRED, PICKED_UP } from "./constants";
+import { CLAIMED, EXPIRED, PICKED_UP, UNCOLLECTED } from "./constants";
 
 export const SETTING = "campus canteens and hostel messes";
 
@@ -9,11 +9,12 @@ export const PROBLEM =
 
 export const METRICS = [
   "kg picked up",
-  `kg posted: quantity from ${PICKED_UP} and ${EXPIRED} listings only.`,
-  `Rescue rate: picked-up kg divided by kg posted; kg posted includes only ${PICKED_UP} and ${EXPIRED} listings.`,
+  `kg with a final outcome: quantity from ${PICKED_UP}, ${EXPIRED}, and ${UNCOLLECTED} listings.`,
+  `Rescue rate: picked-up kg divided by kg with a final outcome; the denominator includes ${PICKED_UP}, ${EXPIRED}, and ${UNCOLLECTED}.`,
   `Meals equivalent: picked-up kg divided by ${MEAL_KG} kg per meal; estimate, assumption not measured.`,
   "kg claimed, awaiting pickup",
-  "Claim rate",
+  "kg claimed but not collected",
+  `Claim rate: ${CLAIMED}, ${PICKED_UP}, and ${UNCOLLECTED} listings divided by ${CLAIMED}, ${PICKED_UP}, ${EXPIRED}, and ${UNCOLLECTED} listings.`,
   "Median time to claim",
   "Claims",
   "Participating donors",
@@ -25,6 +26,7 @@ export const LIMITS = [
   "On the hosted demo, sample data resets when the server restarts or redeploys.",
   "The free host may take about a minute to respond on first load.",
   "The claim-likelihood model uses synthetic data and makes no real-world accuracy claim.",
+  `A claim more than two hours past its pickup end is marked ${UNCOLLECTED}; the claim stays recorded and pickup cannot be confirmed.`,
   "The acting-as selector is a demo identity control; the app has no real authentication."
 ] as const;
 

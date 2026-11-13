@@ -1,4 +1,4 @@
-import { CLAIMED, EXPIRED, PICKED_UP } from "./constants";
+import { CLAIMED, EXPIRED, PICKED_UP, UNCOLLECTED } from "./constants";
 import { MEAL_KG } from "./project-info";
 
 export type ImpactListing = {
@@ -43,19 +43,22 @@ export function calculateImpactMetrics(
     .filter((listing) => listing.status === PICKED_UP)
     .reduce((total, listing) => total + listing.quantityKg, 0);
   const finalListings = listings.filter((listing) =>
-    listing.status === PICKED_UP || listing.status === EXPIRED
+    listing.status === PICKED_UP || listing.status === EXPIRED || listing.status === UNCOLLECTED
   );
-  const kgPosted = finalListings.reduce((total, listing) => total + listing.quantityKg, 0);
-  const rescueRate = kgPosted > 0 ? pickedUpKg / kgPosted : null;
+  const kgWithFinalOutcome = finalListings.reduce((total, listing) => total + listing.quantityKg, 0);
+  const rescueRate = kgWithFinalOutcome > 0 ? pickedUpKg / kgWithFinalOutcome : null;
   const claimedKg = listings
     .filter((listing) => listing.status === CLAIMED)
     .reduce((total, listing) => total + listing.quantityKg, 0);
-  const resolvedStatuses: string[] = [CLAIMED, PICKED_UP, EXPIRED];
+  const uncollectedKg = listings
+    .filter((listing) => listing.status === UNCOLLECTED)
+    .reduce((total, listing) => total + listing.quantityKg, 0);
+  const resolvedStatuses: string[] = [CLAIMED, PICKED_UP, EXPIRED, UNCOLLECTED];
   const resolvedListings = listings.filter((listing) =>
     resolvedStatuses.includes(listing.status)
   );
   const redirectedCount = resolvedListings.filter((listing) =>
-    listing.status === CLAIMED || listing.status === PICKED_UP
+    listing.status === CLAIMED || listing.status === PICKED_UP || listing.status === UNCOLLECTED
   ).length;
   const claimRate = resolvedListings.length
     ? redirectedCount / resolvedListings.length
@@ -97,10 +100,11 @@ export function calculateImpactMetrics(
 
   return {
     pickedUpKg,
-    kgPosted,
+    kgWithFinalOutcome,
     rescueRate,
     mealsEquivalent: pickedUpKg / MEAL_KG,
     claimedKg,
+    uncollectedKg,
     claimRate,
     medianClaimHours,
     pickedUpByDay,

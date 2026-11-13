@@ -1,5 +1,5 @@
 import { prisma } from "../db";
-import { CLAIMED, EXPIRED, FOOD_TYPES, OPEN, PICKED_UP, ROLES } from "../constants";
+import { CLAIMED, EXPIRED, FOOD_TYPES, OPEN, PICKED_UP, ROLES, UNCOLLECTED } from "../constants";
 import { parseIstLocal } from "../time";
 import {
   isValidEntityId,
@@ -178,8 +178,24 @@ export async function markPickedUp(
     }
 
     const now = new Date();
+    const uncollected = await tx.listing.updateMany({
+      where: {
+        id: listingId,
+        status: CLAIMED,
+        pickupEnd: { lt: new Date(now.getTime() - 2 * 60 * 60 * 1000) }
+      },
+      data: { status: UNCOLLECTED }
+    });
+    if (uncollected.count > 0) {
+      return "Already picked up or not claimed";
+    }
+
     const updated = await tx.listing.updateMany({
-      where: { id: listingId, status: CLAIMED },
+      where: {
+        id: listingId,
+        status: CLAIMED,
+        pickupEnd: { gte: new Date(now.getTime() - 2 * 60 * 60 * 1000) }
+      },
       data: { status: PICKED_UP }
     });
     if (updated.count === 0) {
@@ -195,9 +211,16 @@ export async function markPickedUp(
 }
 
 export async function expireOverdueListings(now = new Date()): Promise<number> {
-  const result = await prisma.listing.updateMany({
+  const overdueOpen = await prisma.listing.updateMany({
     where: { status: OPEN, pickupEnd: { lt: now } },
     data: { status: EXPIRED }
   });
-  return result.count;
+  const overdueClaimed = await prisma.listing.updateMany({
+    where: {
+      status: CLAIMED,
+      pickupEnd: { lt: new Date(now.getTime() - 2 * 60 * 60 * 1000) }
+    },
+    data: { status: UNCOLLECTED }
+  });
+  return overdueOpen.count + overdueClaimed.count;
 }
