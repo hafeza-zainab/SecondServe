@@ -88,20 +88,25 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
       <h1 className="mb-8 text-3xl font-semibold">Available listings</h1>
 
       {openListingCount === 0 && (
-        <section className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded border border-amber-700 bg-amber-50 p-5" role="status">
-          <p>No open listings are available. Reset the demo to restore its sample listings.</p>
+        <section className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-amber-300 bg-app-warn-soft p-5 text-app-warn" role="status" aria-live="polite">
+          <p className="font-medium">No open listings are available. Reset the demo to restore its sample listings.</p>
           <ResetDemoButton compact />
         </section>
       )}
 
       {resultMessage && (
-        <p className="mb-6 rounded border p-3" role={resultMessage.role} aria-live={resultMessage.role === "alert" ? "assertive" : "polite"}>
+        <p className={`mb-6 rounded-xl border p-4 font-medium ${resultMessage.role === "alert" ? "border-red-300 bg-red-50 text-red-900" : "border-green-300 bg-app-accent-soft text-green-950"}`} role={resultMessage.role} aria-live={resultMessage.role === "alert" ? "assertive" : "polite"}>
           {resultMessage.text}
         </p>
       )}
 
       {listings.length === 0 ? (
-        <p>No listings are currently available.</p>
+        <section className="surface-card grid justify-items-start gap-3 p-6 sm:p-8">
+          <span className="grid size-12 place-items-center rounded-full bg-gray-100 text-xl" aria-hidden="true">—</span>
+          <h2 className="text-xl font-bold">No listings to show yet</h2>
+          <p className="max-w-xl text-muted">New sample listings will appear here. You can also post a listing as a donor.</p>
+          <a href="/donate" className="button-secondary">Post a listing</a>
+        </section>
       ) : (
         <ul className="grid gap-5">
           {listings.map((listing) => {
@@ -147,7 +152,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
                     )}
                   </div>
                   {expired ? (
-                    <p className="font-medium" role="status" aria-live="polite">Expired</p>
+                    <p className="font-medium" role="status" aria-live="polite"><StatusBadge status={EXPIRED} /></p>
                   ) : actingOrganization?.role === ROLES.NGO ? (
                     <form action={claimListing} className="grid min-w-56 gap-2">
                       <input type="hidden" name="listingId" value={listing.id} />

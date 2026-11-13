@@ -23,6 +23,9 @@
   --color-app-ink: var(--color-ink);
   --color-app-muted: var(--color-muted);
   --color-app-line: var(--color-border);
+  --color-app-accent-soft: var(--color-accent-soft);
+  --color-app-warn-soft: var(--color-warn-soft);
+  --color-app-warn: var(--color-warn);
   --font-sans: var(--font-system);
 }
 
@@ -149,8 +152,7 @@ body {
   *::before,
   *::after {
     scroll-behavior: auto !important;
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
+    transition: none !important;
+    animation: none !important;
   }
 }

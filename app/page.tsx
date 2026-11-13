@@ -70,8 +70,8 @@ export default async function Home() {
       </section>
 
       {openListings === 0 && (
-        <section className="flex flex-wrap items-center justify-between gap-4 rounded border border-amber-700 bg-amber-50 p-5" role="status">
-          <p>No open listings are available. Reset the demo to restore its sample listings.</p>
+        <section className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-amber-300 bg-app-warn-soft p-5 text-app-warn" role="status" aria-live="polite">
+          <p className="font-medium">No open listings are available. Reset the demo to restore its sample listings.</p>
           <ResetDemoButton compact />
         </section>
       )}

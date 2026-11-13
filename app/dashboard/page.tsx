@@ -190,7 +190,10 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       <section className="surface-card mb-10 p-5 sm:p-6">
         <h2 className="mb-5 text-xl font-bold tracking-tight sm:text-2xl">kg picked up per day · last 7 days</h2>
         {!metrics.hasClaims ? (
-          <p>No impact data yet. Claims and pickups will appear here.</p>
+          <div className="rounded-xl border border-dashed border-line bg-gray-50 p-5 text-muted">
+            <p className="font-semibold text-ink">No impact data yet</p>
+            <p className="mt-1 text-sm">Claims and pickups will appear here.</p>
+          </div>
         ) : (
           <div className="grid gap-3">
             {metrics.pickedUpByDay.map((day) => (
@@ -213,7 +216,11 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       <section>
         <h2 className="mb-4 text-2xl font-bold tracking-tight">Latest claims</h2>
         {claimCount === 0 ? (
-          <p>No claims yet. Once an NGO claims a listing, it will appear here.</p>
+          <div className="surface-card grid justify-items-start gap-3 p-6">
+            <span className="grid size-11 place-items-center rounded-full bg-blue-50 font-bold text-blue-900" aria-hidden="true">0</span>
+            <h3 className="text-lg font-bold">No claims yet</h3>
+            <p className="text-sm text-muted">Once an NGO claims a listing, it will appear here.</p>
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[40rem] border-collapse text-left">

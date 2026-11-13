@@ -90,12 +90,12 @@ export default async function DonatePage({ searchParams }: DonatePageProps) {
       </div>
 
       {posted === "1" && (
-        <p className="mb-6 rounded border border-green-700 p-3" role="status" aria-live="polite">
+        <p className="mb-6 rounded-xl border border-green-300 bg-app-accent-soft p-4 font-semibold text-green-950" role="status" aria-live="polite">
           Listing posted
         </p>
       )}
       {error && errorMessages[error] && (
-        <p className="mb-6 rounded border border-red-700 p-3" role="alert" aria-live="assertive">
+        <p className="mb-6 rounded-xl border border-red-300 bg-red-50 p-4 font-medium text-red-900" role="alert" aria-live="assertive">
           {errorMessages[error]}
         </p>
       )}

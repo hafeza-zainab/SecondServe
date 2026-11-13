@@ -63,9 +63,13 @@ export default async function MyPage({ searchParams }: MyPageProps) {
       <main className="mx-auto min-h-screen max-w-4xl px-4 py-12 sm:px-6">
         <h1 className="mb-2 text-3xl font-bold tracking-tight">My listings</h1>
         <p className="mb-8 text-slate-700">Listings posted by {actingOrganization.name}.</p>
-        {resultMessage && <p className="mb-6 rounded border p-3" role="status" aria-live="polite">{resultMessage}</p>}
+        {resultMessage && <p className="mb-6 rounded-xl border border-green-300 bg-app-accent-soft p-4 font-medium text-green-950" role="status" aria-live="polite">{resultMessage}</p>}
         {listings.length === 0 ? (
-          <p>No listings yet. <a className="underline" href="/donate">Post a listing</a>.</p>
+          <section className="surface-card grid justify-items-start gap-3 p-6 sm:p-8">
+            <h2 className="text-xl font-bold">No listings yet</h2>
+            <p className="text-muted">Your donor listings will appear here after you post one.</p>
+            <a className="button-primary" href="/donate">Post a listing</a>
+          </section>
         ) : (
           <ul className="grid gap-4">
             {listings.map((listing) => (
@@ -111,7 +115,11 @@ export default async function MyPage({ searchParams }: MyPageProps) {
         <h1 className="mb-2 text-3xl font-bold tracking-tight">My claims</h1>
         <p className="mb-8 text-slate-700">Claims made by {actingOrganization.name}.</p>
         {claims.length === 0 ? (
-          <p>No claims yet. <a className="underline" href="/listings">Browse listings</a>.</p>
+          <section className="surface-card grid justify-items-start gap-3 p-6 sm:p-8">
+            <h2 className="text-xl font-bold">No claims yet</h2>
+            <p className="text-muted">Listings you claim as this NGO will appear here.</p>
+            <a className="button-primary" href="/listings">Browse listings</a>
+          </section>
         ) : (
           <ul className="grid gap-4">
             {claims.map((claim) => (

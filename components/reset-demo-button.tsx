@@ -32,7 +32,7 @@ export function ResetDemoButton({ compact = false }: ResetDemoButtonProps) {
         </SubmitButton>
       </form>
       {state.message && (
-        <p className="text-sm" role="status" aria-live="polite">
+        <p className={`max-w-md rounded-lg border px-3 py-2 text-sm ${state.kind === "success" ? "border-green-300 bg-app-accent-soft text-green-950" : state.kind === "cooldown" ? "border-amber-300 bg-app-warn-soft text-app-warn" : "border-red-300 bg-red-50 text-red-900"}`} role="status" aria-live="polite">
           {state.message}
         </p>
       )}
