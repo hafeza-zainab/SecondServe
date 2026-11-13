@@ -44,7 +44,8 @@ export default async function RootLayout({
         </header>
         <div className="flex-1">{children}</div>
         <footer className="border-t px-4 py-5 text-center text-sm text-slate-600 sm:px-6">
-          Sample data; resets when the server restarts
+          <p>Sample data; resets when the server restarts</p>
+          <a className="mt-1 inline-block underline" href="/about">About this project</a>
         </footer>
       </body>
     </html>
