@@ -1,12 +1,14 @@
 import { cookies } from "next/headers";
 import { prisma } from "./db";
 import { ROLES } from "./constants";
+import { isValidEntityId } from "./input-limits";
 
 export const ACTING_ORGANIZATION_COOKIE = "secondserve-acting-org";
 
 export async function getActingOrganizationId(): Promise<string | null> {
   const cookieStore = await cookies();
-  return cookieStore.get(ACTING_ORGANIZATION_COOKIE)?.value ?? null;
+  const selectedId = cookieStore.get(ACTING_ORGANIZATION_COOKIE)?.value;
+  return isValidEntityId(selectedId) ? selectedId : null;
 }
 
 export async function getActingOrganizations() {

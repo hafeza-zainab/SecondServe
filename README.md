@@ -6,30 +6,40 @@ SecondServe is a campus food-sharing demo for coordinating surplus food from can
 
 ## The problem
 
-Surplus food from campus kitchens can be difficult to coordinate with nearby community organizations before its pickup window closes. Donors and NGOs need a clear way to share available food, coordinate a claim, and confirm pickup. The project is set in campus canteens and hostel messes.
+Surplus food from campus kitchens can be difficult to coordinate with nearby community organizations before its pickup window closes. Donors and NGOs need a clear way to share available food, coordinate a claim, and confirm pickup. The project setting is campus canteens and hostel messes.
 
 ## Routes
 
-- **Home (`/`)** — project introduction, the post/claim/pickup flow, and live sample totals for picked-up kilograms and open listings.
-- **Donate (`/donate`)** — post a listing as the selected donor, with food type, quantity, pickup window, and location. The form validates inputs and previews an estimated claim chance.
-- **Listings (`/listings`)** — view open and expired sample listings, pickup windows, and synthetic-model estimates. The selected NGO can claim an open listing; the donor can confirm pickup from the dashboard.
-- **Dashboard (`/dashboard`)** — picked-up and awaiting-pickup kilograms, claim rate, median claim time, seven-day pickup totals, participating organizations, and latest claims.
-- **Model (`/model`)** — predictor features, generated-data description, held-out accuracy beside a majority-class baseline, and model limitations.
-- **About (`/about`)** — project setting, problem, dashboard metrics, limits, and AI disclosure.
+- **Home (`/`)** — project introduction, live sample totals, and a static walkthrough of the donor-to-NGO-to-pickup flow.
+- **Donate (`/donate`)** — post a listing as the selected donor, with food type, quantity, pickup window, and location; includes validation and a synthetic claim-likelihood preview.
+- **Listings (`/listings`)** — view open and expired sample listings and synthetic-model estimates; a selected NGO can claim an open listing.
+- **Dashboard (`/dashboard`)** — picked-up and awaiting-pickup kg, final-state kg posted, rescue rate, estimated meal equivalents, claim rate, median claim time, seven-day pickup totals, participating organizations, and latest claims. The listing owner can confirm pickup here.
+- **My activity (`/my`)** — the selected donor’s listings and pickup controls, or the selected NGO’s claims.
+- **Model (`/model`)** — predictor features, generated-data description, held-out accuracy beside a majority-class baseline, and limitations.
+- **About (`/about`)** — project setting, problem, metric definitions, limits, and AI disclosure.
+- **Health (`/api/health`)** — a database-read health response with no database details in the response body.
 
 ## How it works
 
-The app uses Next.js App Router, TypeScript, Tailwind CSS, Prisma 7, and SQLite. The predictor is a plain TypeScript logistic regression with weights stored in `lib/model.json`.
+The app uses Next.js App Router, TypeScript, Tailwind CSS, Prisma 7, and SQLite. Prisma accesses SQLite through `@prisma/adapter-libsql`. The predictor is a plain TypeScript logistic regression with weights stored in `lib/model.json`.
 
 Data model:
 
 1. **Organization** — id, name, role (`DONOR` or `NGO`), area, and creation time.
-2. **Listing** — id, donor organization, title, food type, quantity in kilograms, pickup start/end, location, status, and creation time.
+2. **Listing** — id, donor organization, title, food type, quantity in kilograms, pickup start/end, location, string status, and creation time.
 3. **Claim** — id, one listing, NGO organization, claim time, and optional pickup time.
-4. Listing statuses (`OPEN`, `CLAIMED`, `PICKED_UP`, `EXPIRED`) are stored as strings.
-5. Organization roles are strings; a claim belongs to one listing and one NGO.
 
-The model is trained on 2,400 generated rows using food type, quantity, time until pickup deadline, and pickup start time. Its training data and labels are synthetic and reproducible; its measured accuracy is not evidence of real-world performance.
+The model uses 2,400 generated rows with food type, quantity, hours until pickup end, pickup start time, and a synthetic claim label. Training and data generation use fixed seeds. The recorded held-out accuracy is 64.17%; the majority-class baseline is 55.21%. These are results on synthetic data and make no real-world accuracy claim.
+
+## Impact metric definitions
+
+- **kg picked up** — total quantity of listings with status `PICKED_UP`.
+- **kg posted** — total quantity of final-state listings with status `PICKED_UP` or `EXPIRED`.
+- **Rescue rate** — picked-up kg divided by kg posted. It is shown as unavailable when kg posted is zero.
+- **Meals equivalent** — picked-up kg divided by `MEAL_KG` (0.4 kg per assumed meal); estimate, assumption not measured.
+- **Claim rate** — claimed or picked-up listings divided by claimed, picked-up, and expired listings.
+- **Median time to claim** — median duration from listing creation to claim.
+- **Seven-day pickup totals** — picked-up kg grouped by Asia/Kolkata calendar day.
 
 ## Run locally
 
@@ -42,31 +52,29 @@ npm run seed
 npm run dev
 ```
 
-The standard local database initialization command is `npx prisma db push`. In the restricted sandbox used to verify this repository, the Prisma schema engine did not run reliably, so verification used the checked-in SQL initializer instead:
+In this restricted sandbox, use `npm run db:init` instead of `npx prisma db push`.
 
-```sh
-npm run db:init
-```
+`DATABASE_URL` defaults to `file:./dev.db`; `.env.example` contains that value. The seed creates 5 sample organizations and 18 sample listings (10 `PICKED_UP`, 3 `CLAIMED`, 3 `OPEN`, and 2 `EXPIRED`) with 13 claims; it skips seeding when organizations already exist. Demo data resets when the hosted server restarts or redeploys.
 
-`DATABASE_URL` defaults to `file:./dev.db`; `.env.example` contains that value. The seed creates clearly labelled sample organizations and listings and skips if organizations already exist.
+## Scripts and tests
 
-## Tests and model scripts
-
-```sh
-npm test
-npm run test:db
-npm run build
-npm run smoke
-npm run gen-data
-npm run train
-```
-
-`npm run test:db` creates its own `test.db`; a guard refuses to run the database tests unless the configured file name contains `test`. `npm run smoke` starts the built production app on a free local port, checks all navigation routes, then stops the server.
+- `npm run seed` — idempotently add the sample data if organizations are absent.
+- `npm run reseed` — clear and recreate the local sample data; requires a `file:` database URL.
+- `npm run db:init` — initialize the local SQLite schema from `prisma/schema.sql` (used where the Prisma schema engine cannot run).
+- `npm test` — run 17 pure Node tests; run with `TZ=UTC` and `TZ=Asia/Kolkata` to check both host time zones.
+- `npm run test:db` — create a separate `test.db` with `db:init`, then run 17 database service tests; a guard refuses a configured database filename without `test`.
+- `npx tsc --noEmit` — TypeScript check.
+- `npm run build` — production build.
+- `npm run smoke` — start the production build on a free local port, check all seven pages and `/api/health`, then stop the server.
+- `npm run gen-data` — generate the disclosed synthetic predictor dataset.
+- `npm run train` — train the TypeScript logistic regression and write model weights/metadata.
 
 ## Limits
 
-- Data is sample data. The hosted demo uses an ephemeral SQLite file, so data can reset after a server restart or redeploy; the first hosted load may take about a minute.
-- The claim predictor is trained only on synthetic data. It makes no real-world accuracy claim.
+- The hosted demo uses sample data that resets when the server restarts or redeploys.
+- The free host may take about a minute to respond on first load.
+- Listing title is limited to 80 characters, location to 120, quantity to 0.1–500 kg, and pickup end to 14 days ahead; pickup times are interpreted in Asia/Kolkata.
+- The claim predictor is trained only on synthetic data and makes no real-world accuracy claim.
 - The acting-as selector is a demo identity control, not real authentication.
 - The sample workflow does not establish real-world food safety, availability, or impact results.
 

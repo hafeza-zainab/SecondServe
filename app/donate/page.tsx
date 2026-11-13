@@ -3,6 +3,7 @@ import { FOOD_TYPES, ROLES } from "../../lib/constants";
 import { getActingOrganization } from "../../lib/acting-as";
 import { ClaimLikelihoodPreview } from "../../components/claim-likelihood-preview";
 import { SubmitButton } from "../../components/submit-button";
+import { donateValidationDestination } from "../../lib/donate-form";
 import {
   createListing as createListingService,
   ListingServiceError
@@ -12,6 +13,12 @@ type DonatePageProps = {
   searchParams: Promise<{
     error?: string;
     posted?: string;
+    title?: string;
+    foodType?: string;
+    quantityKg?: string;
+    pickupStart?: string;
+    pickupEnd?: string;
+    locationText?: string;
   }>;
 };
 
@@ -37,7 +44,14 @@ async function createListing(formData: FormData) {
     }, actingOrganization?.id ?? "");
   } catch (error) {
     if (error instanceof ListingServiceError) {
-      redirect(`/donate?error=${encodeURIComponent(error.code)}`);
+      redirect(donateValidationDestination(error.code, {
+        title,
+        foodType,
+        quantityKg: quantityValue,
+        pickupStart: pickupStartValue,
+        pickupEnd: pickupEndValue,
+        locationText
+      }));
     }
     throw error;
   }
@@ -60,22 +74,23 @@ const errorMessages: Record<string, string> = {
 };
 
 export default async function DonatePage({ searchParams }: DonatePageProps) {
-  const [{ error, posted }, actingOrganization] = await Promise.all([
+  const [form, actingOrganization] = await Promise.all([
     searchParams,
     getActingOrganization()
   ]);
+  const { error, posted } = form;
 
   return (
     <main className="mx-auto min-h-screen max-w-2xl px-6 py-12">
       <h1 className="mb-8 text-3xl font-semibold">Post a food listing</h1>
 
       {posted === "1" && (
-        <p className="mb-6 rounded border border-green-700 p-3" role="status">
+        <p className="mb-6 rounded border border-green-700 p-3" role="status" aria-live="polite">
           Listing posted
         </p>
       )}
       {error && errorMessages[error] && (
-        <p className="mb-6 rounded border border-red-700 p-3" role="alert">
+        <p className="mb-6 rounded border border-red-700 p-3" role="alert" aria-live="assertive">
           {errorMessages[error]}
         </p>
       )}
@@ -84,18 +99,21 @@ export default async function DonatePage({ searchParams }: DonatePageProps) {
         {actingOrganization?.role === ROLES.DONOR ? (
           <p>Posting as {actingOrganization.name}</p>
         ) : (
-          <p role="alert">Select a donor organization in the acting-as control to post.</p>
+          <p role="alert" aria-live="assertive">Select a donor organization in the acting-as control to post.</p>
         )}
 
         <label className="grid gap-2">
           Food item
-          <input name="title" required className="rounded border p-2" />
+          <input name="title" required defaultValue={form.title} className="rounded border p-2" />
         </label>
 
         <label className="grid gap-2">
           Food type
-          <select name="foodType" required defaultValue="" className="rounded border p-2">
+          <select name="foodType" required defaultValue={form.foodType ?? ""} className="rounded border p-2">
             <option value="" disabled>Select a food type</option>
+            {form.foodType && !(FOOD_TYPES as readonly string[]).includes(form.foodType) && (
+              <option value={form.foodType}>{form.foodType}</option>
+            )}
             {FOOD_TYPES.map((foodType) => (
               <option key={foodType} value={foodType}>{foodType}</option>
             ))}
@@ -107,6 +125,7 @@ export default async function DonatePage({ searchParams }: DonatePageProps) {
           <input
             name="quantityKg"
             type="number"
+            defaultValue={form.quantityKg}
             min="0.01"
             step="any"
             required
@@ -116,17 +135,23 @@ export default async function DonatePage({ searchParams }: DonatePageProps) {
 
         <label className="grid gap-2">
           Pickup starts
-          <input name="pickupStart" type="datetime-local" required className="rounded border p-2" />
+          <>
+            <input name="pickupStart" type="datetime-local" required defaultValue={form.pickupStart} aria-describedby="times-ist-hint" className="rounded border p-2" />
+            <span id="times-ist-hint" className="text-sm text-slate-600">Times are in IST.</span>
+          </>
         </label>
 
         <label className="grid gap-2">
           Pickup ends
-          <input name="pickupEnd" type="datetime-local" required className="rounded border p-2" />
+          <>
+            <input name="pickupEnd" type="datetime-local" required defaultValue={form.pickupEnd} aria-describedby="times-ist-hint" className="rounded border p-2" />
+            <span className="text-sm text-slate-600">Times are in IST.</span>
+          </>
         </label>
 
         <label className="grid gap-2">
           Pickup location
-          <input name="locationText" required className="rounded border p-2" />
+          <input name="locationText" required defaultValue={form.locationText} className="rounded border p-2" />
         </label>
 
         <ClaimLikelihoodPreview />

@@ -3,12 +3,14 @@ import { createServer } from "node:net";
 import { resolve } from "node:path";
 
 const routes = [
-  ["/", "SecondServe"],
+  ["/", "Try the demo"],
   ["/donate", "Post a food listing"],
   ["/listings", "Available listings"],
   ["/dashboard", "Impact dashboard"],
+  ["/my", "My listings"],
   ["/model", "Claim-likelihood model"],
-  ["/about", "About SecondServe"]
+  ["/about", "About SecondServe"],
+  ["/api/health", "\"status\":\"ok\""]
 ] as const;
 
 function getFreePort(): Promise<number> {

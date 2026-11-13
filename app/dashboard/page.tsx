@@ -3,6 +3,7 @@ import { prisma } from "../../lib/db";
 import { CLAIMED, PICKED_UP, ROLES } from "../../lib/constants";
 import { formatIst } from "../../lib/time";
 import { calculateImpactMetrics } from "../../lib/metrics";
+import { MEAL_KG } from "../../lib/project-info";
 import { SubmitButton } from "../../components/submit-button";
 import {
   getActingOrganization,
@@ -99,17 +100,17 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       <h1 className="mb-8 text-3xl font-semibold">Impact dashboard</h1>
 
       {message === "picked-up" && (
-        <p className="mb-6 rounded border border-green-700 p-3" role="status">
+        <p className="mb-6 rounded border border-green-700 p-3" role="status" aria-live="polite">
           Picked up
         </p>
       )}
       {message === "already-picked-up" && (
-        <p className="mb-6 rounded border border-red-700 p-3" role="alert">
+        <p className="mb-6 rounded border border-red-700 p-3" role="alert" aria-live="assertive">
           Already picked up or not claimed
         </p>
       )}
       {message === "not-owner" && (
-        <p className="mb-6 rounded border border-red-700 p-3" role="alert">
+        <p className="mb-6 rounded border border-red-700 p-3" role="alert" aria-live="assertive">
           Only the donor organization that owns this listing can confirm pickup.
         </p>
       )}
@@ -120,6 +121,27 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           <p className="mt-2 text-3xl font-semibold">
             {metrics.pickedUpKg.toLocaleString(undefined, { maximumFractionDigits: 2 })} kg
           </p>
+        </article>
+        <article className="rounded border p-5">
+          <h2 className="text-sm">kg posted</h2>
+          <p className="mt-2 text-3xl font-semibold">
+            {metrics.kgPosted.toLocaleString(undefined, { maximumFractionDigits: 2 })} kg
+          </p>
+          <p className="mt-1 text-sm text-slate-600">Final-state listings only: picked up or expired.</p>
+        </article>
+        <article className="rounded border p-5">
+          <h2 className="text-sm">Rescue rate</h2>
+          <p className="mt-2 text-3xl font-semibold">
+            {metrics.rescueRate === null ? "—" : `${Math.round(metrics.rescueRate * 100)}%`}
+          </p>
+          <p className="mt-1 text-sm text-slate-600">Picked-up kg divided by posted kg.</p>
+        </article>
+        <article className="rounded border p-5">
+          <h2 className="text-sm">Meals equivalent</h2>
+          <p className="mt-2 text-3xl font-semibold">
+            {metrics.mealsEquivalent.toLocaleString(undefined, { maximumFractionDigits: 1 })}
+          </p>
+          <p className="mt-1 text-sm text-slate-600">Estimate, assumption not measured ({MEAL_KG} kg per meal).</p>
         </article>
         <article className="rounded border p-5">
           <h2 className="text-sm">kg claimed, awaiting pickup</h2>
@@ -184,7 +206,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           <p>No claims yet. Once an NGO claims a listing, it will appear here.</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-left">
+            <table className="w-full min-w-[40rem] border-collapse text-left">
               <thead>
                 <tr className="border-b">
                   <th className="p-3">Listing</th>

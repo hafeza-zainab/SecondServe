@@ -146,6 +146,57 @@ test("createListing accepts a pickup end inside 14 days and rejects one beyond",
   );
 });
 
+test("createListing rejects invalid food, quantity, and datetime input", async () => {
+  const donor = await createOrganization(ROLES.DONOR);
+
+  await rejectsWithCode(
+    createListingService(createInput({ foodType: "Unlisted food" }), donor.id),
+    "foodType"
+  );
+  await rejectsWithCode(
+    createListingService(createInput({ quantityKg: "not-a-number" }), donor.id),
+    "quantityRange"
+  );
+  await rejectsWithCode(
+    createListingService(createInput({ quantityKg: "1".repeat(100) }), donor.id),
+    "quantityRange"
+  );
+  await rejectsWithCode(
+    createListingService(createInput({ pickupStart: "not-a-date" }), donor.id),
+    "date"
+  );
+  await rejectsWithCode(
+    createListingService(createInput({ pickupEnd: "2".repeat(24) }), donor.id),
+    "date"
+  );
+
+  assert.equal(await prisma.listing.count(), 0);
+});
+
+test("createListing rejects reversed and already elapsed pickup windows", async () => {
+  const donor = await createOrganization(ROLES.DONOR);
+  const reversedStart = new Date(Date.now() + 2 * 60 * 60 * 1000);
+  const reversedEnd = new Date(Date.now() + 60 * 60 * 1000);
+  await rejectsWithCode(
+    createListingService(createInput({
+      pickupStart: istLocalValue(reversedStart),
+      pickupEnd: istLocalValue(reversedEnd)
+    }), donor.id),
+    "order"
+  );
+
+  const elapsedStart = new Date(Date.now() - 2 * 60 * 60 * 1000);
+  const elapsedEnd = new Date(Date.now() - 60 * 60 * 1000);
+  await rejectsWithCode(
+    createListingService(createInput({
+      pickupStart: istLocalValue(elapsedStart),
+      pickupEnd: istLocalValue(elapsedEnd)
+    }), donor.id),
+    "future"
+  );
+  assert.equal(await prisma.listing.count(), 0);
+});
+
 test("a listing can be claimed once and the duplicate creates no second claim", async () => {
   const donor = await createOrganization(ROLES.DONOR);
   const ngo = await createOrganization(ROLES.NGO);
@@ -196,6 +247,16 @@ test("a claim rejects missing or unknown acting organization IDs", async () => {
   assert.equal(await prisma.claim.count({ where: { listingId: listing.id } }), 0);
 });
 
+test("a claim rejects oversized listing and acting organization IDs", async () => {
+  const donor = await createOrganization(ROLES.DONOR);
+  const ngo = await createOrganization(ROLES.NGO);
+  const listing = await createListing(donor.id, OPEN);
+
+  assert.equal(await claimListing("l".repeat(65), ngo.id), "Invalid NGO");
+  assert.equal(await claimListing(listing.id, "o".repeat(65)), "Invalid NGO");
+  assert.equal(await prisma.claim.count({ where: { listingId: listing.id } }), 0);
+});
+
 test("markPickedUp sets status and pickedUpAt once and rejects a repeat", async () => {
   const donor = await createOrganization(ROLES.DONOR);
   const ngo = await createOrganization(ROLES.NGO);
@@ -238,6 +299,21 @@ test("a non-owning DONOR cannot mark another organization's claim picked up", as
   assert.equal(unchanged.claim?.pickedUpAt, null);
 });
 
+test("an NGO cannot mark a donor listing picked up", async () => {
+  const donor = await createOrganization(ROLES.DONOR);
+  const ngo = await createOrganization(ROLES.NGO);
+  const listing = await createListing(donor.id, CLAIMED);
+  await prisma.claim.create({ data: { listingId: listing.id, ngoId: ngo.id } });
+
+  assert.equal(await markPickedUp(listing.id, ngo.id), "Not owner");
+  const unchanged = await prisma.listing.findUniqueOrThrow({
+    where: { id: listing.id },
+    include: { claim: true }
+  });
+  assert.equal(unchanged.status, CLAIMED);
+  assert.equal(unchanged.claim?.pickedUpAt, null);
+});
+
 test("pickup rejects missing or unknown acting organization IDs", async () => {
   const donor = await createOrganization(ROLES.DONOR);
   const ngo = await createOrganization(ROLES.NGO);
@@ -246,6 +322,22 @@ test("pickup rejects missing or unknown acting organization IDs", async () => {
 
   assert.equal(await markPickedUp(listing.id, null), "Not owner");
   assert.equal(await markPickedUp(listing.id, "unknown-organization-id"), "Not owner");
+  const unchanged = await prisma.listing.findUniqueOrThrow({
+    where: { id: listing.id },
+    include: { claim: true }
+  });
+  assert.equal(unchanged.status, CLAIMED);
+  assert.equal(unchanged.claim?.pickedUpAt, null);
+});
+
+test("pickup rejects oversized listing and acting organization IDs", async () => {
+  const donor = await createOrganization(ROLES.DONOR);
+  const ngo = await createOrganization(ROLES.NGO);
+  const listing = await createListing(donor.id, CLAIMED);
+  await prisma.claim.create({ data: { listingId: listing.id, ngoId: ngo.id } });
+
+  assert.equal(await markPickedUp("l".repeat(65), donor.id), "Not owner");
+  assert.equal(await markPickedUp(listing.id, "o".repeat(65)), "Not owner");
   const unchanged = await prisma.listing.findUniqueOrThrow({
     where: { id: listing.id },
     include: { claim: true }

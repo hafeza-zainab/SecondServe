@@ -49,6 +49,19 @@ export default async function Home() {
           <li className="rounded-lg border p-5"><span className="font-semibold">3. Confirm pickup</span><p className="mt-2 text-slate-700">The listing’s donor marks it picked up.</p></li>
         </ol>
       </section>
+
+      <section className="rounded-lg border bg-slate-50 p-5">
+        <h2 className="mb-3 text-xl font-semibold">Try the demo</h2>
+        <ol className="list-decimal space-y-2 pl-6 text-slate-700">
+          <li>Switch to a donor.</li>
+          <li>Post a listing.</li>
+          <li>Switch to an NGO.</li>
+          <li>Claim the listing.</li>
+          <li>Switch back to the donor.</li>
+          <li>Mark the listing picked up.</li>
+          <li>Open the dashboard.</li>
+        </ol>
+      </section>
     </main>
   );
 }

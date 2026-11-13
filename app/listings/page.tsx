@@ -83,7 +83,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
       <h1 className="mb-8 text-3xl font-semibold">Available listings</h1>
 
       {resultMessage && (
-        <p className="mb-6 rounded border p-3" role={resultMessage.role}>
+        <p className="mb-6 rounded border p-3" role={resultMessage.role} aria-live={resultMessage.role === "alert" ? "assertive" : "polite"}>
           {resultMessage.text}
         </p>
       )}
@@ -115,7 +115,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
                     )}
                   </div>
                   {expired ? (
-                    <p className="font-medium" role="status">Expired</p>
+                    <p className="font-medium" role="status" aria-live="polite">Expired</p>
                   ) : actingOrganization?.role === ROLES.NGO ? (
                     <form action={claimListing} className="grid min-w-56 gap-2">
                       <input type="hidden" name="listingId" value={listing.id} />
