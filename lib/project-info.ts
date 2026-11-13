@@ -1,3 +1,5 @@
+import { EXPIRED, PICKED_UP } from "./constants";
+
 export const SETTING = "campus canteens and hostel messes";
 
 export const MEAL_KG = 0.4;
@@ -7,9 +9,9 @@ export const PROBLEM =
 
 export const METRICS = [
   "kg picked up",
-  "kg posted: quantity from PICKED_UP and EXPIRED listings only.",
-  "Rescue rate: picked-up kg divided by kg posted; kg posted includes only PICKED_UP and EXPIRED listings.",
-  "Meals equivalent: picked-up kg divided by 0.4 kg per meal; estimate, assumption not measured.",
+  `kg posted: quantity from ${PICKED_UP} and ${EXPIRED} listings only.`,
+  `Rescue rate: picked-up kg divided by kg posted; kg posted includes only ${PICKED_UP} and ${EXPIRED} listings.`,
+  `Meals equivalent: picked-up kg divided by ${MEAL_KG} kg per meal; estimate, assumption not measured.`,
   "kg claimed, awaiting pickup",
   "Claim rate",
   "Median time to claim",
@@ -20,7 +22,8 @@ export const METRICS = [
 ] as const;
 
 export const LIMITS = [
-  "On the hosted demo, data resets when the server restarts or redeploys, and the first load can take about a minute.",
+  "On the hosted demo, sample data resets when the server restarts or redeploys.",
+  "The free host may take about a minute to respond on first load.",
   "The claim-likelihood model uses synthetic data and makes no real-world accuracy claim.",
   "The acting-as selector is a demo identity control; the app has no real authentication."
 ] as const;
