@@ -5,6 +5,7 @@ import { predictClaimProbability } from "../../lib/predict";
 import { formatIst } from "../../lib/time";
 import { SubmitButton } from "../../components/submit-button";
 import { ResetDemoButton } from "../../components/reset-demo-button";
+import { StatusBadge } from "../../components/status-badge";
 import {
   getActingOrganization,
   getActingOrganizationId
@@ -110,10 +111,13 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
               : predictClaimProbability(listing, now);
 
             return (
-              <li key={listing.id} className="rounded border p-5">
+              <li key={listing.id} className="surface-card p-5 sm:p-6">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <h2 className="text-xl font-semibold">{listing.title}</h2>
+                    <div className="mb-2 flex flex-wrap items-center gap-3">
+                      <h2 className="text-xl font-semibold">{listing.title}</h2>
+                      <StatusBadge status={expired ? EXPIRED : OPEN} />
+                    </div>
                     <p>{listing.foodType} · {listing.quantityKg} kg</p>
                     <p>Donated by {listing.donor.name} · {listing.donor.area}</p>
                     <p>Pickup: {listing.locationText}</p>

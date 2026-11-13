@@ -3,6 +3,7 @@ import { prisma } from "../../lib/db";
 import { CLAIMED, EXPIRED, OPEN, PICKED_UP, ROLES } from "../../lib/constants";
 import { formatIst } from "../../lib/time";
 import { SubmitButton } from "../../components/submit-button";
+import { StatusBadge } from "../../components/status-badge";
 import { getActingOrganization, getActingOrganizationId } from "../../lib/acting-as";
 import {
   expireOverdueListings,
@@ -74,7 +75,7 @@ export default async function MyPage({ searchParams }: MyPageProps) {
                     <h2 className="text-xl font-semibold">{listing.title}</h2>
                     <p>{listing.foodType} · {listing.quantityKg} kg · {listing.locationText}</p>
                     <p>Pickup window: {formatIst(listing.pickupStart)}–{formatIst(listing.pickupEnd)}</p>
-                    <p>Status: {listing.status}</p>
+                    <p className="mt-3 flex items-center gap-2 text-sm"><span>Status:</span><StatusBadge status={listing.status} /></p>
                     {listing.claim && <p>Claimed by {listing.claim.ngo.name}</p>}
                   </div>
                   {listing.status === CLAIMED ? (
@@ -119,7 +120,7 @@ export default async function MyPage({ searchParams }: MyPageProps) {
                 <p>{claim.listing.quantityKg} kg · {claim.listing.foodType}</p>
                 <p>Donated by {claim.listing.donor.name}</p>
                 <p>Claimed at {formatIst(claim.claimedAt)}</p>
-                <p>Status: {claim.listing.status}</p>
+                <p className="mt-3 flex items-center gap-2 text-sm"><span>Status:</span><StatusBadge status={claim.listing.status} /></p>
                 {claim.pickedUpAt && <p>Picked up at {formatIst(claim.pickedUpAt)}</p>}
               </li>
             ))}

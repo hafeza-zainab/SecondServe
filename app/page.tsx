@@ -38,22 +38,22 @@ export default async function Home() {
           Help campus canteens and hostel messes share surplus meals with nearby community organizations before the food goes to waste.
         </p>
         <div className="flex flex-wrap gap-3">
-          <a href="/donate" className="rounded bg-slate-950 px-5 py-3 font-medium text-white">Post a listing</a>
-          <a href="/listings" className="rounded border px-5 py-3 font-medium">Browse listings</a>
+          <a href="/donate" className="button-primary">Post a listing</a>
+          <a href="/listings" className="button-secondary">Browse listings</a>
         </div>
         <div className="flex flex-wrap gap-3">
           {sampleDonor && (
             <form action={setActingOrganization}>
               <input type="hidden" name="organizationId" value={sampleDonor.id} />
               <input type="hidden" name="returnTo" value="/donate" />
-              <button type="submit" className="rounded bg-green-800 px-5 py-3 font-medium text-white">Play a donor</button>
+              <button type="submit" className="button-primary">Play a donor</button>
             </form>
           )}
           {sampleNgo && (
             <form action={setActingOrganization}>
               <input type="hidden" name="organizationId" value={sampleNgo.id} />
               <input type="hidden" name="returnTo" value="/listings" />
-              <button type="submit" className="rounded border px-5 py-3 font-medium">Play an NGO</button>
+              <button type="submit" className="button-secondary">Play an NGO</button>
             </form>
           )}
         </div>

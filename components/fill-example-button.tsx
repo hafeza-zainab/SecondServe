@@ -43,7 +43,7 @@ export function FillExampleButton() {
     <button
       type="button"
       onClick={fillExample}
-      className="rounded border px-4 py-2 font-medium"
+      className="button-secondary"
     >
       Fill example
     </button>

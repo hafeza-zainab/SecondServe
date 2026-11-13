@@ -25,8 +25,8 @@ export function ResetDemoButton({ compact = false }: ResetDemoButtonProps) {
         <SubmitButton
           pendingText="Resetting…"
           className={compact
-            ? "rounded border px-3 py-2 text-sm font-medium disabled:cursor-wait disabled:opacity-60"
-            : "rounded bg-slate-950 px-4 py-2 font-medium text-white disabled:cursor-wait disabled:opacity-60"}
+            ? "button-secondary min-h-0 px-3 py-2 text-sm"
+            : "button-primary"}
         >
           Reset demo data
         </SubmitButton>

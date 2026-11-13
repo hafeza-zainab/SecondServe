@@ -5,6 +5,7 @@ import { formatIst } from "../../lib/time";
 import { calculateImpactMetrics } from "../../lib/metrics";
 import { MEAL_KG } from "../../lib/project-info";
 import { SubmitButton } from "../../components/submit-button";
+import { StatusBadge } from "../../components/status-badge";
 import {
   getActingOrganization,
   getActingOrganizationId
@@ -231,9 +232,9 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                     <td className="p-3">{formatIst(claim.claimedAt)}</td>
                     <td className="p-3">
                       {claim.listing.status === PICKED_UP ? (
-                        <span>Picked up</span>
+                        <StatusBadge status={PICKED_UP} />
                       ) : claim.listing.status === UNCOLLECTED ? (
-                        <span>Not collected</span>
+                        <StatusBadge status={UNCOLLECTED} />
                       ) : claim.listing.status === CLAIMED ? (
                         actingOrganization?.role === ROLES.DONOR &&
                         actingOrganization.id === claim.listing.donorId ? (
@@ -244,7 +245,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                             </SubmitButton>
                           </form>
                         ) : (
-                          <span>Awaiting pickup</span>
+                          <StatusBadge status={CLAIMED} />
                         )
                       ) : null}
                     </td>
