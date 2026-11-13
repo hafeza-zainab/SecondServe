@@ -11,7 +11,7 @@
     "seed": "tsx prisma/seed.ts",
     "gen-data": "tsx scripts/generate-synthetic.ts",
     "train": "tsx scripts/train.ts",
-    "test": "tsx --test tests/time.test.ts tests/metrics.test.ts tests/predict.test.ts tests/identity-return-to.test.ts",
+    "test": "tsx --test tests/time.test.ts tests/metrics.test.ts tests/predict.test.ts tests/identity-return-to.test.ts tests/donate-form.test.ts",
     "test:db": "tsx scripts/test-db.ts",
     "smoke": "tsx scripts/smoke.ts",
     "reseed": "tsx scripts/reseed.ts",
