@@ -6,3 +6,38 @@ generator client {
 datasource db {
   provider = "sqlite"
 }
+
+model Organization {
+  id        String    @id @default(cuid())
+  name      String
+  role      String
+  area      String
+  createdAt DateTime  @default(now())
+  listings  Listing[] @relation("DonorListings")
+  claims    Claim[]   @relation("NgoClaims")
+}
+
+model Listing {
+  id           String        @id @default(cuid())
+  donorId      String
+  donor        Organization  @relation("DonorListings", fields: [donorId], references: [id])
+  title        String
+  foodType     String
+  quantityKg   Float
+  pickupStart  DateTime
+  pickupEnd    DateTime
+  locationText String
+  status       String
+  createdAt    DateTime      @default(now())
+  claim        Claim?
+}
+
+model Claim {
+  id         String       @id @default(cuid())
+  listingId  String       @unique
+  listing    Listing      @relation(fields: [listingId], references: [id])
+  ngoId      String
+  ngo        Organization @relation("NgoClaims", fields: [ngoId], references: [id])
+  claimedAt  DateTime     @default(now())
+  pickedUpAt DateTime?
+}
