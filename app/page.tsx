@@ -1,18 +1,30 @@
 import { prisma } from "../lib/db";
 import { OPEN, PICKED_UP } from "../lib/constants";
 import { ResetDemoButton } from "../components/reset-demo-button";
+import { setActingOrganization } from "./actions/acting-as";
+import { ROLES } from "../lib/constants";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const now = new Date();
-  const [pickedUp, openListings] = await Promise.all([
+  const [pickedUp, openListings, sampleDonor, sampleNgo] = await Promise.all([
     prisma.listing.aggregate({
       where: { status: PICKED_UP },
       _sum: { quantityKg: true }
     }),
     prisma.listing.count({
       where: { status: OPEN, pickupEnd: { gt: now } }
+    }),
+    prisma.organization.findFirst({
+      where: { role: ROLES.DONOR, name: { endsWith: "(sample)" } },
+      orderBy: { createdAt: "asc" },
+      select: { id: true }
+    }),
+    prisma.organization.findFirst({
+      where: { role: ROLES.NGO, name: { endsWith: "(sample)" } },
+      orderBy: { createdAt: "asc" },
+      select: { id: true }
     })
   ]);
   const pickedUpKg = pickedUp._sum.quantityKg ?? 0;
@@ -28,6 +40,22 @@ export default async function Home() {
         <div className="flex flex-wrap gap-3">
           <a href="/donate" className="rounded bg-slate-950 px-5 py-3 font-medium text-white">Post a listing</a>
           <a href="/listings" className="rounded border px-5 py-3 font-medium">Browse listings</a>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          {sampleDonor && (
+            <form action={setActingOrganization}>
+              <input type="hidden" name="organizationId" value={sampleDonor.id} />
+              <input type="hidden" name="returnTo" value="/donate" />
+              <button type="submit" className="rounded bg-green-800 px-5 py-3 font-medium text-white">Play a donor</button>
+            </form>
+          )}
+          {sampleNgo && (
+            <form action={setActingOrganization}>
+              <input type="hidden" name="organizationId" value={sampleNgo.id} />
+              <input type="hidden" name="returnTo" value="/listings" />
+              <button type="submit" className="rounded border px-5 py-3 font-medium">Play an NGO</button>
+            </form>
+          )}
         </div>
       </section>
 

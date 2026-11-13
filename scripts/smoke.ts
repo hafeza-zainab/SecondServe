@@ -3,8 +3,8 @@ import { createServer } from "node:net";
 import { resolve } from "node:path";
 
 const routes = [
-  ["/", "Try the demo"],
-  ["/donate", "Post a food listing"],
+  ["/", "Play a donor"],
+  ["/donate", "Fill example"],
   ["/listings", "Available listings"],
   ["/dashboard", "kg claimed but not collected"],
   ["/my", "My listings"],

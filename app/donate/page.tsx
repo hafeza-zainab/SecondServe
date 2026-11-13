@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { FOOD_TYPES, ROLES } from "../../lib/constants";
 import { getActingOrganization } from "../../lib/acting-as";
 import { ClaimLikelihoodPreview } from "../../components/claim-likelihood-preview";
+import { FillExampleButton } from "../../components/fill-example-button";
 import { SubmitButton } from "../../components/submit-button";
 import { donateValidationDestination } from "../../lib/donate-form";
 import {
@@ -95,7 +96,10 @@ export default async function DonatePage({ searchParams }: DonatePageProps) {
         </p>
       )}
 
-      <form action={createListing} className="grid gap-5">
+      <form id="donate-listing-form" action={createListing} className="grid gap-5">
+        <div>
+          <FillExampleButton />
+        </div>
         {actingOrganization?.role === ROLES.DONOR ? (
           <p>Posting as {actingOrganization.name}</p>
         ) : (
