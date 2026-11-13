@@ -1,4 +1,5 @@
 import { AI_DISCLOSURE, LIMITS, METRICS, PROBLEM, SETTING } from "../../lib/project-info";
+import { ResetDemoButton } from "../../components/reset-demo-button";
 
 export default function AboutPage() {
   return (
@@ -31,6 +32,12 @@ export default function AboutPage() {
       <section>
         <h2 className="mb-2 text-xl font-semibold">AI disclosure</h2>
         <p className="leading-7 text-slate-700">{AI_DISCLOSURE}</p>
+      </section>
+
+      <section className="mt-10 rounded border bg-slate-50 p-5">
+        <h2 className="mb-2 text-xl font-semibold">Demo controls</h2>
+        <p className="mb-4 text-slate-700">Reset sample data to remove changes made during your walkthrough.</p>
+        <ResetDemoButton />
       </section>
     </main>
   );

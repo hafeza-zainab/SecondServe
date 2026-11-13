@@ -1,5 +1,6 @@
 import { prisma } from "../lib/db";
 import { OPEN, PICKED_UP } from "../lib/constants";
+import { ResetDemoButton } from "../components/reset-demo-button";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,13 @@ export default async function Home() {
           <a href="/listings" className="rounded border px-5 py-3 font-medium">Browse listings</a>
         </div>
       </section>
+
+      {openListings === 0 && (
+        <section className="flex flex-wrap items-center justify-between gap-4 rounded border border-amber-700 bg-amber-50 p-5" role="status">
+          <p>No open listings are available. Reset the demo to restore its sample listings.</p>
+          <ResetDemoButton compact />
+        </section>
+      )}
 
       <section aria-label="Live impact numbers" className="grid gap-4 sm:grid-cols-2">
         <article className="rounded-lg border bg-slate-50 p-5">

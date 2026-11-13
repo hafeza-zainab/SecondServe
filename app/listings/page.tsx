@@ -4,6 +4,7 @@ import { CLAIMED, EXPIRED, OPEN, ROLES } from "../../lib/constants";
 import { predictClaimProbability } from "../../lib/predict";
 import { formatIst } from "../../lib/time";
 import { SubmitButton } from "../../components/submit-button";
+import { ResetDemoButton } from "../../components/reset-demo-button";
 import {
   getActingOrganization,
   getActingOrganizationId
@@ -77,10 +78,20 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
     return left.pickupEnd.getTime() - right.pickupEnd.getTime();
   });
   const resultMessage = message ? messages[message] : undefined;
+  const openListingCount = listings.filter((listing) =>
+    listing.status === OPEN && listing.pickupEnd > now
+  ).length;
 
   return (
     <main className="mx-auto min-h-screen max-w-4xl px-6 py-12">
       <h1 className="mb-8 text-3xl font-semibold">Available listings</h1>
+
+      {openListingCount === 0 && (
+        <section className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded border border-amber-700 bg-amber-50 p-5" role="status">
+          <p>No open listings are available. Reset the demo to restore its sample listings.</p>
+          <ResetDemoButton compact />
+        </section>
+      )}
 
       {resultMessage && (
         <p className="mb-6 rounded border p-3" role={resultMessage.role} aria-live={resultMessage.role === "alert" ? "assertive" : "polite"}>

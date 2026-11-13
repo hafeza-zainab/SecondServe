@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ActingAsSelector } from "../components/acting-as-selector";
+import { ResetDemoButton } from "../components/reset-demo-button";
 import { getActingOrganization, getActingOrganizations } from "../lib/acting-as";
 import "./globals.css";
 
@@ -47,6 +48,9 @@ export default async function RootLayout({
         <footer className="border-t px-4 py-5 text-center text-sm text-slate-600 sm:px-6">
           <p>Sample data; resets when the server restarts</p>
           <a className="mt-1 inline-block underline" href="/about">About this project</a>
+          <div className="mt-3 flex justify-center">
+            <ResetDemoButton compact />
+          </div>
         </footer>
       </body>
     </html>
