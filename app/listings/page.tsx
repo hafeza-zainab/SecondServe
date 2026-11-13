@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { prisma } from "../../lib/db";
 import { CLAIMED, EXPIRED, OPEN, ROLES } from "../../lib/constants";
+import { predictClaimProbability } from "../../lib/predict";
 
 type ListingsPageProps = {
   searchParams: Promise<{
@@ -116,6 +117,9 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
         <ul className="grid gap-5">
           {listings.map((listing) => {
             const expired = listing.status === EXPIRED || listing.pickupEnd <= now;
+            const claimProbability = expired
+              ? null
+              : predictClaimProbability(listing, now);
 
             return (
               <li key={listing.id} className="rounded border p-5">
@@ -126,6 +130,12 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
                     <p>Donated by {listing.donor.name} · {listing.donor.area}</p>
                     <p>Pickup: {listing.locationText}</p>
                     <p>Pickup deadline: {listing.pickupEnd.toLocaleString()}</p>
+                    {claimProbability !== null && (
+                      <>
+                        <p>Likely to be claimed: {Math.round(claimProbability * 100)}%</p>
+                        <p className="text-sm">Estimated by a model trained on synthetic data</p>
+                      </>
+                    )}
                   </div>
                   {expired ? (
                     <p className="font-medium" role="status">Expired</p>

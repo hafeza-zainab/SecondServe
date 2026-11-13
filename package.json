@@ -8,7 +8,9 @@
     "start": "next start",
     "start:render": "prisma db push && (npm run seed || echo 'seed failed, starting anyway') && next start",
     "postinstall": "prisma generate",
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts",
+    "gen-data": "tsx scripts/generate-synthetic.ts",
+    "train": "tsx scripts/train.ts"
   },
   "dependencies": {
     "@prisma/adapter-libsql": "^7.10.1",
