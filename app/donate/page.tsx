@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { prisma } from "../../lib/db";
 import { FOOD_TYPES, ROLES } from "../../lib/constants";
+import { getActingOrganization } from "../../lib/acting-as";
 import {
   createListing as createListingService,
   ListingServiceError
@@ -16,24 +16,23 @@ type DonatePageProps = {
 async function createListing(formData: FormData) {
   "use server";
 
-  const donorId = String(formData.get("donorId") ?? "").trim();
   const title = String(formData.get("title") ?? "").trim();
   const foodType = String(formData.get("foodType") ?? "");
   const quantityValue = String(formData.get("quantityKg") ?? "").trim();
   const pickupStartValue = String(formData.get("pickupStart") ?? "");
   const pickupEndValue = String(formData.get("pickupEnd") ?? "");
   const locationText = String(formData.get("locationText") ?? "").trim();
+  const actingOrganization = await getActingOrganization();
 
   try {
     await createListingService({
-      donorId,
       title,
       foodType,
       quantityKg: quantityValue,
       pickupStart: pickupStartValue,
       pickupEnd: pickupEndValue,
       locationText
-    });
+    }, actingOrganization?.id ?? "");
   } catch (error) {
     if (error instanceof ListingServiceError) {
       redirect(`/donate?error=${encodeURIComponent(error.code)}`);
@@ -51,17 +50,13 @@ const errorMessages: Record<string, string> = {
   date: "Enter valid pickup start and end times.",
   order: "Pickup end must be after pickup start.",
   future: "Pickup end must be in the future.",
-  donor: "Choose an existing donor organization.",
+  donor: "Select a donor organization in the acting-as control.",
 };
 
 export default async function DonatePage({ searchParams }: DonatePageProps) {
-  const [{ error, posted }, donors] = await Promise.all([
+  const [{ error, posted }, actingOrganization] = await Promise.all([
     searchParams,
-    prisma.organization.findMany({
-      where: { role: ROLES.DONOR },
-      orderBy: { name: "asc" },
-      select: { id: true, name: true, area: true }
-    })
+    getActingOrganization()
   ]);
 
   return (
@@ -80,17 +75,11 @@ export default async function DonatePage({ searchParams }: DonatePageProps) {
       )}
 
       <form action={createListing} className="grid gap-5">
-        <label className="grid gap-2">
-          Donor organization
-          <select name="donorId" required defaultValue="" className="rounded border p-2">
-            <option value="" disabled>Select a donor</option>
-            {donors.map((donor) => (
-              <option key={donor.id} value={donor.id}>
-                {donor.name} ({donor.area})
-              </option>
-            ))}
-          </select>
-        </label>
+        {actingOrganization?.role === ROLES.DONOR ? (
+          <p>Posting as {actingOrganization.name}</p>
+        ) : (
+          <p role="alert">Select a donor organization in the acting-as control to post.</p>
+        )}
 
         <label className="grid gap-2">
           Food item
@@ -134,9 +123,11 @@ export default async function DonatePage({ searchParams }: DonatePageProps) {
           <input name="locationText" required className="rounded border p-2" />
         </label>
 
-        <button type="submit" className="rounded bg-black px-4 py-2 text-white">
-          Post listing
-        </button>
+        {actingOrganization?.role === ROLES.DONOR && (
+          <button type="submit" className="rounded bg-black px-4 py-2 text-white">
+            Post listing
+          </button>
+        )}
       </form>
     </main>
   );

@@ -4,6 +4,10 @@ import { CLAIMED, EXPIRED, OPEN, ROLES } from "../../lib/constants";
 import { predictClaimProbability } from "../../lib/predict";
 import { formatIst } from "../../lib/time";
 import {
+  getActingOrganization,
+  getActingOrganizationId
+} from "../../lib/acting-as";
+import {
   claimListing as claimListingService,
   expireOverdueListings
 } from "../../lib/services/listings";
@@ -18,12 +22,12 @@ async function claimListing(formData: FormData) {
   "use server";
 
   const listingId = String(formData.get("listingId") ?? "").trim();
-  const ngoId = String(formData.get("ngoId") ?? "").trim();
-  if (!listingId || !ngoId) {
-    redirect("/listings?message=choose-ngo");
+  const actingOrganizationId = await getActingOrganizationId();
+  if (!listingId) {
+    redirect("/listings?message=invalid-ngo");
   }
 
-  const result = await claimListingService(listingId, ngoId);
+  const result = await claimListingService(listingId, actingOrganizationId);
   if (result === "Invalid NGO") {
     redirect("/listings?message=invalid-ngo");
   }
@@ -50,7 +54,7 @@ const messages: Record<string, { text: string; role: "status" | "alert" }> = {
 export default async function ListingsPage({ searchParams }: ListingsPageProps) {
   await expireOverdueListings();
   const now = new Date();
-  const [{ message }, [foundListings, ngos]] = await Promise.all([
+  const [{ message }, [foundListings, actingOrganization]] = await Promise.all([
     searchParams,
     Promise.all([
       prisma.listing.findMany({
@@ -60,11 +64,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
         },
         orderBy: { pickupEnd: "asc" }
       }),
-      prisma.organization.findMany({
-        where: { role: ROLES.NGO },
-        orderBy: { name: "asc" },
-        select: { id: true, name: true }
-      })
+      getActingOrganization()
     ])
   ]);
   const listings = [...foundListings].sort((left, right) => {
@@ -115,33 +115,18 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
                   </div>
                   {expired ? (
                     <p className="font-medium" role="status">Expired</p>
-                  ) : (
+                  ) : actingOrganization?.role === ROLES.NGO ? (
                     <form action={claimListing} className="grid min-w-56 gap-2">
                       <input type="hidden" name="listingId" value={listing.id} />
-                      <label className="grid gap-1">
-                        Claiming NGO
-                        <select
-                          name="ngoId"
-                          required
-                          defaultValue=""
-                          className="rounded border p-2"
-                          disabled={ngos.length === 0}
-                        >
-                          <option value="" disabled>Select an NGO</option>
-                          {ngos.map((ngo) => (
-                            <option key={ngo.id} value={ngo.id}>{ngo.name}</option>
-                          ))}
-                        </select>
-                      </label>
                       <button
                         type="submit"
-                        disabled={ngos.length === 0}
-                        className="rounded bg-black px-4 py-2 text-white disabled:opacity-50"
+                        className="rounded bg-black px-4 py-2 text-white"
                       >
                         Claim
                       </button>
-                      {ngos.length === 0 && <p>No NGO organizations are available.</p>}
                     </form>
+                  ) : (
+                    <p>Switch to an NGO to claim this listing.</p>
                   )}
                 </div>
               </li>

@@ -2,6 +2,10 @@ import { redirect } from "next/navigation";
 import { prisma } from "../../lib/db";
 import { CLAIMED, PICKED_UP, ROLES } from "../../lib/constants";
 import { formatIst } from "../../lib/time";
+import {
+  getActingOrganization,
+  getActingOrganizationId
+} from "../../lib/acting-as";
 import { expireOverdueListings, markPickedUp as markPickedUpService } from "../../lib/services/listings";
 
 export const dynamic = "force-dynamic";
@@ -16,12 +20,17 @@ async function markPickedUp(formData: FormData) {
     redirect("/dashboard?message=already-picked-up");
   }
 
-  const updated = await markPickedUpService(listingId);
+  const updated = await markPickedUpService(
+    listingId,
+    await getActingOrganizationId()
+  );
 
   redirect(
     updated === "Picked up"
       ? "/dashboard?message=picked-up"
-      : "/dashboard?message=already-picked-up"
+      : updated === "Not owner"
+        ? "/dashboard?message=not-owner"
+        : "/dashboard?message=already-picked-up"
   );
 }
 
@@ -33,6 +42,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   await expireOverdueListings();
   const [
     { message },
+    actingOrganization,
     pickedUp,
     awaitingPickup,
     claimCount,
@@ -41,6 +51,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     latestClaims
   ] = await Promise.all([
       searchParams,
+      getActingOrganization(),
       prisma.listing.aggregate({
         where: { status: PICKED_UP },
         _sum: { quantityKg: true }
@@ -68,7 +79,9 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         orderBy: { claimedAt: "desc" },
         take: 5,
         include: {
-          listing: { select: { title: true, quantityKg: true, status: true } },
+          listing: {
+            select: { title: true, quantityKg: true, status: true, donorId: true }
+          },
           ngo: { select: { name: true } }
         }
       })
@@ -89,6 +102,11 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       {message === "already-picked-up" && (
         <p className="mb-6 rounded border border-red-700 p-3" role="alert">
           Already picked up or not claimed
+        </p>
+      )}
+      {message === "not-owner" && (
+        <p className="mb-6 rounded border border-red-700 p-3" role="alert">
+          Only the donor organization that owns this listing can confirm pickup.
         </p>
       )}
 
@@ -146,15 +164,20 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                       {claim.listing.status === PICKED_UP ? (
                         <span>Picked up</span>
                       ) : claim.listing.status === CLAIMED ? (
-                        <form action={markPickedUp}>
-                          <input type="hidden" name="listingId" value={claim.listingId} />
-                          <button
-                            type="submit"
-                            className="rounded bg-black px-3 py-2 text-white"
-                          >
-                            Mark picked up
-                          </button>
-                        </form>
+                        actingOrganization?.role === ROLES.DONOR &&
+                        actingOrganization.id === claim.listing.donorId ? (
+                          <form action={markPickedUp}>
+                            <input type="hidden" name="listingId" value={claim.listingId} />
+                            <button
+                              type="submit"
+                              className="rounded bg-black px-3 py-2 text-white"
+                            >
+                              Mark picked up
+                            </button>
+                          </form>
+                        ) : (
+                          <span>Awaiting pickup</span>
+                        )
                       ) : null}
                     </td>
                   </tr>

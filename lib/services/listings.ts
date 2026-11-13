@@ -10,7 +10,6 @@ export class ListingServiceError extends Error {
 }
 
 export type CreateListingInput = {
-  donorId: string;
   title: string;
   foodType: string;
   quantityKg: string;
@@ -19,8 +18,10 @@ export type CreateListingInput = {
   locationText: string;
 };
 
-export async function createListing(input: CreateListingInput) {
-  const donorId = input.donorId.trim();
+export async function createListing(
+  input: CreateListingInput,
+  actingOrganizationId: string
+) {
   const title = input.title.trim();
   const foodType = input.foodType;
   const quantityValue = input.quantityKg.trim();
@@ -29,7 +30,7 @@ export async function createListing(input: CreateListingInput) {
   const locationText = input.locationText.trim();
 
   if (
-    !donorId || !title || !foodType || !quantityValue || !pickupStartValue ||
+    !title || !foodType || !quantityValue || !pickupStartValue ||
     !pickupEndValue || !locationText
   ) {
     throw new ListingServiceError("missing");
@@ -59,7 +60,7 @@ export async function createListing(input: CreateListingInput) {
   }
 
   const donor = await prisma.organization.findUnique({
-    where: { id: donorId },
+    where: { id: actingOrganizationId },
     select: { role: true }
   });
   if (!donor || donor.role !== ROLES.DONOR) {
@@ -68,7 +69,7 @@ export async function createListing(input: CreateListingInput) {
 
   return prisma.listing.create({
     data: {
-      donorId,
+      donorId: actingOrganizationId,
       title,
       foodType,
       quantityKg,
@@ -82,13 +83,17 @@ export async function createListing(input: CreateListingInput) {
 
 export async function claimListing(
   listingId: string,
-  ngoId: string
+  actingOrganizationId: string | null
 ): Promise<"Claimed" | "Already claimed or expired" | "Invalid NGO"> {
+  if (!listingId || !actingOrganizationId) {
+    return "Invalid NGO";
+  }
+
   const ngo = await prisma.organization.findUnique({
-    where: { id: ngoId },
+    where: { id: actingOrganizationId },
     select: { role: true }
   });
-  if (!listingId || !ngoId || !ngo || ngo.role !== ROLES.NGO) {
+  if (!ngo || ngo.role !== ROLES.NGO) {
     return "Invalid NGO";
   }
 
@@ -102,7 +107,7 @@ export async function claimListing(
       if (updated.count === 0) {
         return false;
       }
-      await tx.claim.create({ data: { listingId, ngoId } });
+      await tx.claim.create({ data: { listingId, ngoId: actingOrganizationId } });
       return true;
     });
     return claimed ? "Claimed" : "Already claimed or expired";
@@ -118,9 +123,32 @@ export async function claimListing(
 }
 
 export async function markPickedUp(
-  listingId: string
-): Promise<"Picked up" | "Already picked up or not claimed"> {
+  listingId: string,
+  actingOrganizationId: string | null
+): Promise<"Picked up" | "Already picked up or not claimed" | "Not owner"> {
   return prisma.$transaction(async (tx) => {
+    if (!actingOrganizationId) {
+      return "Not owner";
+    }
+
+    const [listing, actingOrganization] = await Promise.all([
+      tx.listing.findUnique({
+        where: { id: listingId },
+        select: { donorId: true }
+      }),
+      tx.organization.findUnique({
+        where: { id: actingOrganizationId },
+        select: { role: true }
+      })
+    ]);
+    if (
+      !listing ||
+      listing.donorId !== actingOrganizationId ||
+      actingOrganization?.role !== ROLES.DONOR
+    ) {
+      return "Not owner";
+    }
+
     const now = new Date();
     const updated = await tx.listing.updateMany({
       where: { id: listingId, status: CLAIMED },
