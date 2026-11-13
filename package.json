@@ -6,7 +6,9 @@
     "dev": "next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
-    "postinstall": "prisma generate"
+    "start:render": "prisma db push && (npm run seed || echo 'seed failed, starting anyway') && next start",
+    "postinstall": "prisma generate",
+    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/adapter-libsql": "^7.10.1",
@@ -24,6 +26,7 @@
     "postcss": "^8.5.32",
     "prisma": "^7.10.1",
     "tailwindcss": "^4.3.5",
+    "tsx": "^4.23.15",
     "typescript": "^5.9.3"
   },
   "allowScripts": {
