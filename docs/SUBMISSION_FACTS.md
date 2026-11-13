@@ -34,8 +34,14 @@ Facts below are verifiable in this repository.
 ## Verification counts
 
 - Pure Node test suite: 17 tests (`npm test`).
-- Isolated Prisma service test suite: 20 tests (`npm run test:db`); it initializes `test.db` through `npm run db:init`.
+- Isolated Prisma service test suite: 21 tests (`npm run test:db`); it initializes `test.db` through `npm run db:init`.
 - The pure suite was run with both `TZ=UTC` and `TZ=Asia/Kolkata`.
+
+## Demo mode
+
+- The acting-as selector uses sample organizations and is not authentication.
+- Reset controls are available in the footer and on `/about`, ask for confirmation, and enforce a 30-second per-process cooldown.
+- On the hosted demo, sample data resets when the server restarts or redeploys; the first load can take about a minute.
 
 ## Synthetic predictor
 

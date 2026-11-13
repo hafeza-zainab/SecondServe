@@ -19,6 +19,16 @@ Surplus food from campus kitchens can be difficult to coordinate with nearby com
 - **About (`/about`)** — project setting, problem, metric definitions, limits, and AI disclosure.
 - **Health (`/api/health`)** — a database-read health response with no database details in the response body.
 
+## Demo mode
+
+The acting-as selector lets you try the sample donor and NGO workflows without creating an account; it is a demo identity control, not authentication. Use the **Reset demo data** button in the footer or on `/about` to restore the sample dataset. The button asks for confirmation and has a 30-second per-process cooldown. On the hosted demo, data resets when the server restarts or redeploys, and the first load can take about a minute.
+
+## Screenshots
+
+- Home: screenshot placeholder.
+- Listings: screenshot placeholder.
+- Dashboard: screenshot placeholder.
+
 ## How it works
 
 The app uses Next.js App Router, TypeScript, Tailwind CSS, Prisma 7, and SQLite. Prisma accesses SQLite through `@prisma/adapter-libsql`. The predictor is a plain TypeScript logistic regression with weights stored in `lib/model.json`.
@@ -65,7 +75,7 @@ In this restricted sandbox, use `npm run db:init` instead of `npx prisma db push
 - `npm run reseed` — clear and recreate the local sample data; requires a `file:` database URL.
 - `npm run db:init` — initialize the local SQLite schema from `prisma/schema.sql` (used where the Prisma schema engine cannot run).
 - `npm test` — run 17 pure Node tests; run with `TZ=UTC` and `TZ=Asia/Kolkata` to check both host time zones.
-- `npm run test:db` — create a separate `test.db` with `db:init`, then run 19 database service tests; a guard refuses a configured database filename without `test`.
+- `npm run test:db` — create a separate `test.db` with `db:init`, then run 21 database service tests; a guard refuses a configured database filename without `test`.
 - `npx tsc --noEmit` — TypeScript check.
 - `npm run build` — production build.
 - `npm run smoke` — start the production build on a free local port, check all seven pages and `/api/health`, then stop the server.

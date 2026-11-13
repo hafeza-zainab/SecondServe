@@ -41,7 +41,8 @@ export default function AboutPage() {
 
       <section className="surface-card p-5 sm:p-7">
         <h2 className="mb-2 text-xl font-bold tracking-tight">Demo controls</h2>
-        <p className="mb-4 text-slate-700">Reset sample data to remove changes made during your walkthrough.</p>
+        <p className="mb-3 leading-7 text-slate-700">Use the acting-as selector to try the sample donor and NGO flows. It is a demo identity control, not real authentication.</p>
+        <p className="mb-4 leading-7 text-slate-700">Reset sample data to remove changes made during your walkthrough. The button asks for confirmation and has a 30-second per-process cooldown. On the hosted demo, data resets when the server restarts or redeploys, and the first load can take about a minute.</p>
         <ResetDemoButton />
       </section>
       </div>
