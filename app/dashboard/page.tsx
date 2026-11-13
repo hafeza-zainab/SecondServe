@@ -3,6 +3,7 @@ import { prisma } from "../../lib/db";
 import { CLAIMED, PICKED_UP, ROLES } from "../../lib/constants";
 import { formatIst } from "../../lib/time";
 import { calculateImpactMetrics } from "../../lib/metrics";
+import { MEAL_KG } from "../../lib/project-info";
 import { SubmitButton } from "../../components/submit-button";
 import {
   getActingOrganization,
@@ -120,6 +121,27 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           <p className="mt-2 text-3xl font-semibold">
             {metrics.pickedUpKg.toLocaleString(undefined, { maximumFractionDigits: 2 })} kg
           </p>
+        </article>
+        <article className="rounded border p-5">
+          <h2 className="text-sm">kg posted</h2>
+          <p className="mt-2 text-3xl font-semibold">
+            {metrics.kgPosted.toLocaleString(undefined, { maximumFractionDigits: 2 })} kg
+          </p>
+          <p className="mt-1 text-sm text-slate-600">Final-state listings only: picked up or expired.</p>
+        </article>
+        <article className="rounded border p-5">
+          <h2 className="text-sm">Rescue rate</h2>
+          <p className="mt-2 text-3xl font-semibold">
+            {metrics.rescueRate === null ? "—" : `${Math.round(metrics.rescueRate * 100)}%`}
+          </p>
+          <p className="mt-1 text-sm text-slate-600">Picked-up kg divided by posted kg.</p>
+        </article>
+        <article className="rounded border p-5">
+          <h2 className="text-sm">Meals equivalent</h2>
+          <p className="mt-2 text-3xl font-semibold">
+            {metrics.mealsEquivalent.toLocaleString(undefined, { maximumFractionDigits: 1 })}
+          </p>
+          <p className="mt-1 text-sm text-slate-600">Estimate, assumption not measured ({MEAL_KG} kg per meal).</p>
         </article>
         <article className="rounded border p-5">
           <h2 className="text-sm">kg claimed, awaiting pickup</h2>

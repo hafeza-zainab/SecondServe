@@ -1,10 +1,15 @@
 export const SETTING = "campus canteens and hostel messes";
 
+export const MEAL_KG = 0.4;
+
 export const PROBLEM =
   "Surplus food from campus kitchens can be difficult to coordinate with nearby community organizations before its pickup window closes. Donors and NGOs need a clear way to share available food, coordinate a claim, and confirm pickup.";
 
 export const METRICS = [
   "kg picked up",
+  "kg posted: quantity from PICKED_UP and EXPIRED listings only.",
+  "Rescue rate: picked-up kg divided by kg posted; kg posted includes only PICKED_UP and EXPIRED listings.",
+  "Meals equivalent: picked-up kg divided by 0.4 kg per meal; estimate, assumption not measured.",
   "kg claimed, awaiting pickup",
   "Claim rate",
   "Median time to claim",

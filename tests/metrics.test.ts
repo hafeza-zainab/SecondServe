@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { CLAIMED, EXPIRED, PICKED_UP } from "../lib/constants";
+import { CLAIMED, EXPIRED, OPEN, PICKED_UP } from "../lib/constants";
 import { calculateImpactMetrics } from "../lib/metrics";
 
 const now = new Date("2026-11-13T12:00:00.000Z");
@@ -9,6 +9,9 @@ test("impact metrics handle empty data without dividing by zero", () => {
   const metrics = calculateImpactMetrics([], [], now);
 
   assert.equal(metrics.pickedUpKg, 0);
+  assert.equal(metrics.kgPosted, 0);
+  assert.equal(metrics.rescueRate, null);
+  assert.equal(metrics.mealsEquivalent, 0);
   assert.equal(metrics.claimedKg, 0);
   assert.equal(metrics.claimRate, null);
   assert.equal(metrics.medianClaimHours, null);
@@ -33,10 +36,25 @@ test("impact metrics calculate one claim and count CLAIMED, PICKED_UP, and EXPIR
   );
 
   assert.equal(metrics.pickedUpKg, 8);
+  assert.equal(metrics.kgPosted, 10);
+  assert.equal(metrics.rescueRate, 0.8);
+  assert.equal(metrics.mealsEquivalent, 20);
   assert.equal(metrics.claimedKg, 4);
   assert.equal(metrics.claimRate, 2 / 3);
   assert.equal(metrics.medianClaimHours, 1);
   assert.equal(metrics.pickedUpByDay.at(-1)?.quantityKg, 8);
+});
+
+test("rescue rate excludes open and claimed listings from final kg posted", () => {
+  const metrics = calculateImpactMetrics([
+    { status: PICKED_UP, quantityKg: 10, createdAt: now },
+    { status: EXPIRED, quantityKg: 5, createdAt: now },
+    { status: CLAIMED, quantityKg: 100, createdAt: now },
+    { status: OPEN, quantityKg: 200, createdAt: now }
+  ], [], now);
+
+  assert.equal(metrics.kgPosted, 15);
+  assert.equal(metrics.rescueRate, 10 / 15);
 });
 
 test("impact metrics use the median for an even number of claim durations", () => {
