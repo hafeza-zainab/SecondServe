@@ -13,7 +13,7 @@ function istDayAt(now: Date, daysAgo: number, hour: number) {
   ) - IST_OFFSET_MS);
 }
 
-async function main() {
+export async function seedDemoData() {
   const existingOrganizations = await prisma.organization.count();
   if (existingOrganizations > 0) {
     console.log(
@@ -72,7 +72,7 @@ async function main() {
           foodType: "Cooked meals",
           quantityKg: 18.5,
           pickupStart: hoursFromNow(2),
-          pickupEnd: hoursFromNow(4),
+          pickupEnd: hoursFromNow(5),
           locationText: "Greenfield Canteen, Main Street",
           status: OPEN
         }
@@ -287,11 +287,18 @@ async function main() {
   );
 }
 
-main()
-  .catch((error: unknown) => {
+async function main() {
+  try {
+    await seedDemoData();
+  } catch (error: unknown) {
     console.error("Seed failed:", error);
     process.exitCode = 1;
-  })
-  .finally(async () => {
+  } finally {
     await prisma.$disconnect();
-  });
+  }
+}
+
+const invokedScript = process.argv[1]?.replaceAll("\\", "/");
+if (invokedScript && /(?:^|\/)prisma\/seed\.ts$/.test(invokedScript)) {
+  void main();
+}

@@ -2,6 +2,7 @@ import "./helpers/require-test-db";
 import assert from "node:assert/strict";
 import { after, beforeEach, test } from "node:test";
 import { prisma } from "../lib/db";
+import { resetDemoData } from "../lib/demo";
 import { CLAIMED, EXPIRED, OPEN, PICKED_UP, ROLES, UNCOLLECTED } from "../lib/constants";
 import {
   claimListing,
@@ -451,4 +452,39 @@ test("expiry marks claimed listings UNCOLLECTED only more than two hours after p
   assert.equal(byId.get(beyondBoundary.id)?.status, UNCOLLECTED);
   assert.ok(byId.get(exactBoundary.id)?.claim);
   assert.ok(byId.get(beyondBoundary.id)?.claim);
+});
+
+test("resetDemoData removes judge rows and restores the seeded dataset", async () => {
+  const judgeDonor = await prisma.organization.create({
+    data: { name: "Judge-created donor (sample)", role: ROLES.DONOR, area: "Test area" }
+  });
+  const judgeNgo = await prisma.organization.create({
+    data: { name: "Judge-created NGO (sample)", role: ROLES.NGO, area: "Test area" }
+  });
+  const judgeListing = await createListing(judgeDonor.id, CLAIMED);
+  await prisma.claim.create({ data: { listingId: judgeListing.id, ngoId: judgeNgo.id } });
+
+  await resetDemoData();
+
+  assert.equal(await prisma.organization.count(), 5);
+  assert.equal(await prisma.listing.count(), 19);
+  assert.equal(await prisma.claim.count(), 14);
+  assert.equal(
+    await prisma.organization.count({ where: { name: { startsWith: "Judge-created" } } }),
+    0
+  );
+  assert.equal(
+    await prisma.listing.count({ where: { title: { startsWith: "Service test listing" } } }),
+    0
+  );
+
+  const openListings = await prisma.listing.findMany({
+    where: { status: OPEN },
+    select: { pickupEnd: true }
+  });
+  assert.equal(openListings.length, 3);
+  for (const listing of openListings) {
+    const hoursAhead = (listing.pickupEnd.getTime() - Date.now()) / (60 * 60 * 1000);
+    assert.ok(hoursAhead >= 4 && hoursAhead <= 30, `deadline was ${hoursAhead} hours ahead`);
+  }
 });
