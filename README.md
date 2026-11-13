@@ -68,6 +68,7 @@ npm run train
 ## Limits
 
 - On the hosted demo, data resets when the server restarts or redeploys, and the first load can take about a minute.
+- The free host may take about a minute to respond on first load.
 - The claim predictor is trained only on synthetic data. It makes no real-world accuracy claim.
 - The acting-as selector is a demo identity control, not real authentication.
 - The sample workflow does not establish real-world food safety, availability, or impact results.

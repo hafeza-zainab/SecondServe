@@ -9,7 +9,8 @@ const routes = [
   ["/dashboard", "Impact dashboard"],
   ["/my", "My listings"],
   ["/model", "Claim-likelihood model"],
-  ["/about", "About SecondServe"]
+  ["/about", "About SecondServe"],
+  ["/api/health", "\"status\":\"ok\""]
 ] as const;
 
 function getFreePort(): Promise<number> {

@@ -23,6 +23,7 @@ export default function AboutPage() {
 
       <section className="mb-8">
         <h2 className="mb-2 text-xl font-semibold">Limits</h2>
+        <p className="mb-3 text-slate-700">The free host may take about a minute to respond on first load.</p>
         <ul className="list-disc space-y-2 pl-6 text-slate-700">
           {LIMITS.map((limit) => <li key={limit}>{limit}</li>)}
         </ul>
