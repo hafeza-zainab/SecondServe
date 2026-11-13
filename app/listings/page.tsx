@@ -3,6 +3,7 @@ import { prisma } from "../../lib/db";
 import { CLAIMED, EXPIRED, OPEN, ROLES } from "../../lib/constants";
 import { predictClaimProbability } from "../../lib/predict";
 import { formatIst } from "../../lib/time";
+import { SubmitButton } from "../../components/submit-button";
 import {
   getActingOrganization,
   getActingOrganizationId
@@ -118,12 +119,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
                   ) : actingOrganization?.role === ROLES.NGO ? (
                     <form action={claimListing} className="grid min-w-56 gap-2">
                       <input type="hidden" name="listingId" value={listing.id} />
-                      <button
-                        type="submit"
-                        className="rounded bg-black px-4 py-2 text-white"
-                      >
-                        Claim
-                      </button>
+                      <SubmitButton pendingText="Claiming…">Claim</SubmitButton>
                     </form>
                   ) : (
                     <p>Switch to an NGO to claim this listing.</p>

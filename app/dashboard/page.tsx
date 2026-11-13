@@ -3,6 +3,7 @@ import { prisma } from "../../lib/db";
 import { CLAIMED, PICKED_UP, ROLES } from "../../lib/constants";
 import { formatIst } from "../../lib/time";
 import { calculateImpactMetrics } from "../../lib/metrics";
+import { SubmitButton } from "../../components/submit-button";
 import {
   getActingOrganization,
   getActingOrganizationId
@@ -208,12 +209,9 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                         actingOrganization.id === claim.listing.donorId ? (
                           <form action={markPickedUp}>
                             <input type="hidden" name="listingId" value={claim.listingId} />
-                            <button
-                              type="submit"
-                              className="rounded bg-black px-3 py-2 text-white"
-                            >
+                            <SubmitButton pendingText="Saving…" className="rounded bg-black px-3 py-2 text-white">
                               Mark picked up
-                            </button>
+                            </SubmitButton>
                           </form>
                         ) : (
                           <span>Awaiting pickup</span>

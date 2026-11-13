@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { setActingOrganization } from "../app/actions/acting-as";
+import { SubmitButton } from "./submit-button";
 
 type OrganizationOption = {
   id: string;
@@ -26,10 +27,10 @@ export function ActingAsSelector({
 
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <p aria-live="polite">
-        Acting as: {selectedName} ({selectedRole})
+      <p className="min-w-0 break-words text-sm" aria-live="polite">
+        Acting as: <span className="font-medium">{selectedName} ({selectedRole})</span>
       </p>
-      <form action={setActingOrganization} className="flex items-center gap-2">
+      <form action={setActingOrganization} className="flex min-w-0 flex-wrap items-center gap-2">
         <input type="hidden" name="returnTo" value={pathname} />
         <label className="sr-only" htmlFor="acting-organization">
           Choose an organization to act as
@@ -39,7 +40,7 @@ export function ActingAsSelector({
           name="organizationId"
           defaultValue={selectedId}
           required
-          className="rounded border p-2"
+          className="max-w-full rounded border bg-white p-2"
         >
           {organizations.map((organization) => (
             <option key={organization.id} value={organization.id}>
@@ -47,9 +48,7 @@ export function ActingAsSelector({
             </option>
           ))}
         </select>
-        <button type="submit" className="rounded border px-3 py-2">
-          Switch
-        </button>
+        <SubmitButton pendingText="Switching…" className="rounded border bg-white px-3 py-2">Switch</SubmitButton>
       </form>
     </div>
   );
