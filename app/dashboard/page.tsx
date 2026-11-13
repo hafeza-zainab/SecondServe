@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "../../lib/db";
 import { CLAIMED, PICKED_UP, ROLES } from "../../lib/constants";
 import { formatIst } from "../../lib/time";
+import { expireOverdueListings, markPickedUp as markPickedUpService } from "../../lib/services/listings";
 
 export const dynamic = "force-dynamic";
 
@@ -15,26 +16,12 @@ async function markPickedUp(formData: FormData) {
     redirect("/dashboard?message=already-picked-up");
   }
 
-  const updated = await prisma.$transaction(async (tx) => {
-    const now = new Date();
-    const listingUpdate = await tx.listing.updateMany({
-      where: { id: listingId, status: CLAIMED },
-      data: { status: PICKED_UP }
-    });
-
-    if (listingUpdate.count === 0) {
-      return false;
-    }
-
-    await tx.claim.update({
-      where: { listingId },
-      data: { pickedUpAt: now }
-    });
-    return true;
-  });
+  const updated = await markPickedUpService(listingId);
 
   redirect(
-    updated ? "/dashboard?message=picked-up" : "/dashboard?message=already-picked-up"
+    updated === "Picked up"
+      ? "/dashboard?message=picked-up"
+      : "/dashboard?message=already-picked-up"
   );
 }
 
@@ -43,6 +30,7 @@ type DashboardPageProps = {
 };
 
 export default async function DashboardPage({ searchParams }: DashboardPageProps) {
+  await expireOverdueListings();
   const [
     { message },
     pickedUp,

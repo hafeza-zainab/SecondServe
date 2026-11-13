@@ -3,6 +3,10 @@ import { prisma } from "../../lib/db";
 import { CLAIMED, EXPIRED, OPEN, ROLES } from "../../lib/constants";
 import { predictClaimProbability } from "../../lib/predict";
 import { formatIst } from "../../lib/time";
+import {
+  claimListing as claimListingService,
+  expireOverdueListings
+} from "../../lib/services/listings";
 
 type ListingsPageProps = {
   searchParams: Promise<{
@@ -19,53 +23,15 @@ async function claimListing(formData: FormData) {
     redirect("/listings?message=choose-ngo");
   }
 
-  const ngo = await prisma.organization.findUnique({
-    where: { id: ngoId },
-    select: { role: true }
-  });
-  if (!ngo || ngo.role !== ROLES.NGO) {
+  const result = await claimListingService(listingId, ngoId);
+  if (result === "Invalid NGO") {
     redirect("/listings?message=invalid-ngo");
   }
-
-  try {
-    const claimed = await prisma.$transaction(async (tx) => {
-      const now = new Date();
-      const updated = await tx.listing.updateMany({
-        where: {
-          id: listingId,
-          status: OPEN,
-          pickupEnd: { gt: now }
-        },
-        data: { status: CLAIMED }
-      });
-
-      if (updated.count === 0) {
-        return false;
-      }
-
-      await tx.claim.create({
-        data: {
-          listingId,
-          ngoId
-        }
-      });
-      return true;
-    });
-
-    redirect(
-      claimed ? "/listings?message=claimed" : "/listings?message=already-claimed"
-    );
-  } catch (error) {
-    if (
-      typeof error === "object" &&
-      error !== null &&
-      "code" in error &&
-      error.code === "P2002"
-    ) {
-      redirect("/listings?message=already-claimed");
-    }
-    throw error;
-  }
+  redirect(
+    result === "Claimed"
+      ? "/listings?message=claimed"
+      : "/listings?message=already-claimed"
+  );
 }
 
 const messages: Record<string, { text: string; role: "status" | "alert" }> = {
@@ -82,6 +48,7 @@ const messages: Record<string, { text: string; role: "status" | "alert" }> = {
 };
 
 export default async function ListingsPage({ searchParams }: ListingsPageProps) {
+  await expireOverdueListings();
   const now = new Date();
   const [{ message }, [foundListings, ngos]] = await Promise.all([
     searchParams,

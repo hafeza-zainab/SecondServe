@@ -1,7 +1,10 @@
 import { redirect } from "next/navigation";
 import { prisma } from "../../lib/db";
-import { FOOD_TYPES, OPEN, ROLES } from "../../lib/constants";
-import { parseIstLocal } from "../../lib/time";
+import { FOOD_TYPES, ROLES } from "../../lib/constants";
+import {
+  createListing as createListingService,
+  ListingServiceError
+} from "../../lib/services/listings";
 
 type DonatePageProps = {
   searchParams: Promise<{
@@ -21,68 +24,22 @@ async function createListing(formData: FormData) {
   const pickupEndValue = String(formData.get("pickupEnd") ?? "");
   const locationText = String(formData.get("locationText") ?? "").trim();
 
-  if (
-    !donorId ||
-    !title ||
-    !foodType ||
-    !quantityValue ||
-    !pickupStartValue ||
-    !pickupEndValue ||
-    !locationText
-  ) {
-    redirect("/donate?error=missing");
-  }
-
-  if (!(FOOD_TYPES as readonly string[]).includes(foodType)) {
-    redirect("/donate?error=foodType");
-  }
-
-  const quantityKg = Number(quantityValue);
-  if (!Number.isFinite(quantityKg) || quantityKg <= 0) {
-    redirect("/donate?error=quantity");
-  }
-
-  let pickupStart: Date;
-  let pickupEnd: Date;
   try {
-    pickupStart = parseIstLocal(pickupStartValue);
-    pickupEnd = parseIstLocal(pickupEndValue);
-  } catch {
-    redirect("/donate?error=date");
-  }
-  if (
-    Number.isNaN(pickupStart.getTime()) ||
-    Number.isNaN(pickupEnd.getTime())
-  ) {
-    redirect("/donate?error=date");
-  }
-  if (pickupEnd <= pickupStart) {
-    redirect("/donate?error=order");
-  }
-  if (pickupEnd <= new Date()) {
-    redirect("/donate?error=future");
-  }
-
-  const donor = await prisma.organization.findUnique({
-    where: { id: donorId },
-    select: { role: true }
-  });
-  if (!donor || donor.role !== ROLES.DONOR) {
-    redirect("/donate?error=donor");
-  }
-
-  await prisma.listing.create({
-    data: {
+    await createListingService({
       donorId,
       title,
       foodType,
-      quantityKg,
-      pickupStart,
-      pickupEnd,
-      locationText,
-      status: OPEN
+      quantityKg: quantityValue,
+      pickupStart: pickupStartValue,
+      pickupEnd: pickupEndValue,
+      locationText
+    });
+  } catch (error) {
+    if (error instanceof ListingServiceError) {
+      redirect(`/donate?error=${encodeURIComponent(error.code)}`);
     }
-  });
+    throw error;
+  }
 
   redirect("/donate?posted=1");
 }
