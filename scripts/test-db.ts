@@ -1,9 +1,10 @@
 import { spawnSync } from "node:child_process";
+import { rmSync } from "node:fs";
 import { resolve } from "node:path";
 
 const root = process.cwd();
-const prismaCli = resolve(root, "node_modules/prisma/build/index.js");
 const env = { ...process.env, DATABASE_URL: "file:./test.db" };
+rmSync(resolve(root, "test.db"), { force: true });
 
 function run(label: string, args: string[]) {
   console.log(`\n> node ${args.join(" ")}  (${label})`);
@@ -20,7 +21,11 @@ function run(label: string, args: string[]) {
   }
 }
 
-run("prepare isolated test.db", [prismaCli, "db", "push"]);
+run("apply schema to isolated test.db", [
+  "--import",
+  "tsx",
+  "scripts/apply-schema.ts"
+]);
 run("run database service tests", [
   "--import",
   "tsx",

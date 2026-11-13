@@ -12,7 +12,8 @@
     "gen-data": "tsx scripts/generate-synthetic.ts",
     "train": "tsx scripts/train.ts",
     "test": "tsx --test tests/time.test.ts",
-    "test:db": "tsx scripts/test-db.ts"
+    "test:db": "tsx scripts/test-db.ts",
+    "db:init": "tsx scripts/apply-schema.ts"
   },
   "dependencies": {
     "@prisma/adapter-libsql": "^7.10.1",
