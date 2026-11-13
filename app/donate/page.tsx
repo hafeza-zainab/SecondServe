@@ -85,12 +85,12 @@ export default async function DonatePage({ searchParams }: DonatePageProps) {
       <h1 className="mb-8 text-3xl font-semibold">Post a food listing</h1>
 
       {posted === "1" && (
-        <p className="mb-6 rounded border border-green-700 p-3" role="status">
+        <p className="mb-6 rounded border border-green-700 p-3" role="status" aria-live="polite">
           Listing posted
         </p>
       )}
       {error && errorMessages[error] && (
-        <p className="mb-6 rounded border border-red-700 p-3" role="alert">
+        <p className="mb-6 rounded border border-red-700 p-3" role="alert" aria-live="assertive">
           {errorMessages[error]}
         </p>
       )}
@@ -99,7 +99,7 @@ export default async function DonatePage({ searchParams }: DonatePageProps) {
         {actingOrganization?.role === ROLES.DONOR ? (
           <p>Posting as {actingOrganization.name}</p>
         ) : (
-          <p role="alert">Select a donor organization in the acting-as control to post.</p>
+          <p role="alert" aria-live="assertive">Select a donor organization in the acting-as control to post.</p>
         )}
 
         <label className="grid gap-2">

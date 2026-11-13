@@ -23,9 +23,9 @@ export default async function RootLayout({
       <body className="flex min-h-screen flex-col bg-white text-slate-950">
         <header className="border-b bg-slate-50 px-4 py-4 sm:px-6">
           <div className="mx-auto grid max-w-6xl gap-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-col items-start gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
               <a href="/" className="text-xl font-bold tracking-tight">SecondServe</a>
-              <nav aria-label="Main navigation" className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
+              <nav aria-label="Main navigation" className="flex w-full flex-col gap-2 text-sm sm:w-auto sm:flex-row sm:flex-wrap sm:gap-x-4 sm:gap-y-2">
                 <a className="underline-offset-4 hover:underline" href="/">Home</a>
                 <a className="underline-offset-4 hover:underline" href="/donate">Donate</a>
                 <a className="underline-offset-4 hover:underline" href="/listings">Listings</a>

@@ -26,11 +26,11 @@ export function ActingAsSelector({
   const pathname = usePathname() ?? "/";
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
+    <div className="flex flex-col items-start gap-3 sm:flex-row sm:flex-wrap sm:items-center">
       <p className="min-w-0 break-words text-sm" aria-live="polite">
         Acting as: <span className="font-medium">{selectedName} ({selectedRole})</span>
       </p>
-      <form action={setActingOrganization} className="flex min-w-0 flex-wrap items-center gap-2">
+      <form action={setActingOrganization} className="flex w-full min-w-0 flex-col items-start gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
         <input type="hidden" name="returnTo" value={pathname} />
         <label className="sr-only" htmlFor="acting-organization">
           Choose an organization to act as

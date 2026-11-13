@@ -99,17 +99,17 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       <h1 className="mb-8 text-3xl font-semibold">Impact dashboard</h1>
 
       {message === "picked-up" && (
-        <p className="mb-6 rounded border border-green-700 p-3" role="status">
+        <p className="mb-6 rounded border border-green-700 p-3" role="status" aria-live="polite">
           Picked up
         </p>
       )}
       {message === "already-picked-up" && (
-        <p className="mb-6 rounded border border-red-700 p-3" role="alert">
+        <p className="mb-6 rounded border border-red-700 p-3" role="alert" aria-live="assertive">
           Already picked up or not claimed
         </p>
       )}
       {message === "not-owner" && (
-        <p className="mb-6 rounded border border-red-700 p-3" role="alert">
+        <p className="mb-6 rounded border border-red-700 p-3" role="alert" aria-live="assertive">
           Only the donor organization that owns this listing can confirm pickup.
         </p>
       )}
@@ -184,7 +184,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           <p>No claims yet. Once an NGO claims a listing, it will appear here.</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-left">
+            <table className="w-full min-w-[40rem] border-collapse text-left">
               <thead>
                 <tr className="border-b">
                   <th className="p-3">Listing</th>
