@@ -54,6 +54,7 @@ async function main() {
       const openRice = await tx.listing.create({
         data: {
           donorId: canteen.id,
+          createdAt: hoursFromNow(-24),
           title: "Rice and lentil curry (sample)",
           foodType: "Cooked meals",
           quantityKg: 18.5,
@@ -66,6 +67,7 @@ async function main() {
       const openBiryani = await tx.listing.create({
         data: {
           donorId: hostelMess.id,
+          createdAt: hoursFromNow(-24),
           title: "Vegetable biryani (sample)",
           foodType: "Cooked meals",
           quantityKg: 12,
@@ -78,6 +80,7 @@ async function main() {
       const openBakery = await tx.listing.create({
         data: {
           donorId: caterer.id,
+          createdAt: hoursFromNow(-24),
           title: "Assorted bakery bread (sample)",
           foodType: "Bakery",
           quantityKg: 8,
@@ -90,6 +93,7 @@ async function main() {
       const claimedTrays = await tx.listing.create({
         data: {
           donorId: caterer.id,
+          createdAt: hoursFromNow(-24),
           title: "Vegetarian lunch trays (sample)",
           foodType: "Cooked meals",
           quantityKg: 24,
@@ -102,6 +106,7 @@ async function main() {
       const pickedUpPasta = await tx.listing.create({
         data: {
           donorId: canteen.id,
+          createdAt: hoursFromNow(-24),
           title: "Tomato pasta (sample)",
           foodType: "Cooked meals",
           quantityKg: 15.5,
@@ -114,6 +119,7 @@ async function main() {
       const pickedUpProduce = await tx.listing.create({
         data: {
           donorId: hostelMess.id,
+          createdAt: hoursFromNow(-24),
           title: "Seasonal vegetables and rice (sample)",
           foodType: "Cooked meals",
           quantityKg: 30,
@@ -126,6 +132,7 @@ async function main() {
       await tx.listing.create({
         data: {
           donorId: caterer.id,
+          createdAt: hoursFromNow(-24),
           title: "Fresh fruit boxes (sample)",
           foodType: "Produce",
           quantityKg: 22,

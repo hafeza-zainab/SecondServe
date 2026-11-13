@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "../../lib/db";
 import { CLAIMED, PICKED_UP, ROLES } from "../../lib/constants";
 import { formatIst } from "../../lib/time";
+import { calculateImpactMetrics } from "../../lib/metrics";
 import {
   getActingOrganization,
   getActingOrganizationId
@@ -43,8 +44,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const [
     { message },
     actingOrganization,
-    pickedUp,
-    awaitingPickup,
+    impactListings,
+    metricClaims,
     claimCount,
     donorCount,
     ngoCount,
@@ -52,13 +53,15 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   ] = await Promise.all([
       searchParams,
       getActingOrganization(),
-      prisma.listing.aggregate({
-        where: { status: PICKED_UP },
-        _sum: { quantityKg: true }
+      prisma.listing.findMany({
+        select: { status: true, quantityKg: true, createdAt: true }
       }),
-      prisma.listing.aggregate({
-        where: { status: CLAIMED },
-        _sum: { quantityKg: true }
+      prisma.claim.findMany({
+        select: {
+          claimedAt: true,
+          pickedUpAt: true,
+          listing: { select: { status: true, quantityKg: true, createdAt: true } }
+        }
       }),
       prisma.claim.count(),
       prisma.organization.count({
@@ -87,8 +90,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       })
   ]);
 
-  const pickedUpKg = pickedUp._sum.quantityKg ?? 0;
-  const claimedKg = awaitingPickup._sum.quantityKg ?? 0;
+  const metrics = calculateImpactMetrics(impactListings, metricClaims);
+  const maxDailyKg = Math.max(...metrics.pickedUpByDay.map((day) => day.quantityKg), 0);
 
   return (
     <main className="mx-auto min-h-screen max-w-5xl px-6 py-12">
@@ -110,17 +113,31 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         </p>
       )}
 
-      <section className="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <section className="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <article className="rounded border p-5">
           <h2 className="text-sm">kg picked up</h2>
           <p className="mt-2 text-3xl font-semibold">
-            {pickedUpKg.toLocaleString(undefined, { maximumFractionDigits: 2 })} kg
+            {metrics.pickedUpKg.toLocaleString(undefined, { maximumFractionDigits: 2 })} kg
           </p>
         </article>
         <article className="rounded border p-5">
           <h2 className="text-sm">kg claimed, awaiting pickup</h2>
           <p className="mt-2 text-3xl font-semibold">
-            {claimedKg.toLocaleString(undefined, { maximumFractionDigits: 2 })} kg
+            {metrics.claimedKg.toLocaleString(undefined, { maximumFractionDigits: 2 })} kg
+          </p>
+        </article>
+        <article className="rounded border p-5">
+          <h2 className="text-sm">Claim rate</h2>
+          <p className="mt-2 text-3xl font-semibold">
+            {metrics.claimRate === null ? "—" : `${Math.round(metrics.claimRate * 100)}%`}
+          </p>
+        </article>
+        <article className="rounded border p-5">
+          <h2 className="text-sm">Median time to claim</h2>
+          <p className="mt-2 text-3xl font-semibold">
+            {metrics.medianClaimHours === null
+              ? "—"
+              : `${metrics.medianClaimHours.toLocaleString(undefined, { maximumFractionDigits: 1 })} hours`}
           </p>
         </article>
         <article className="rounded border p-5">
@@ -136,6 +153,29 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           <p className="mt-2 text-3xl font-semibold">{ngoCount}</p>
         </article>
       </section>
+
+      <section className="mb-10 rounded border p-5">
+        <h2 className="mb-4 text-xl font-semibold">kg picked up per day · last 7 days</h2>
+        {!metrics.hasClaims ? (
+          <p>No impact data yet. Claims and pickups will appear here.</p>
+        ) : (
+          <div className="grid gap-3">
+            {metrics.pickedUpByDay.map((day) => (
+              <div key={day.date} className="grid grid-cols-[4rem_1fr_5rem] items-center gap-3">
+                <span>{day.label}</span>
+                <div className="h-4 rounded bg-slate-100">
+                  <div
+                    className="h-4 rounded bg-green-700"
+                    style={{ width: `${maxDailyKg ? (day.quantityKg / maxDailyKg) * 100 : 0}%` }}
+                  />
+                </div>
+                <span className="text-right">{day.quantityKg.toLocaleString(undefined, { maximumFractionDigits: 2 })} kg</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+      <p className="mb-10 text-sm text-slate-600">Figures from sample data.</p>
 
       <section>
         <h2 className="mb-4 text-2xl font-semibold">Latest claims</h2>
