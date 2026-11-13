@@ -1,3 +1,4 @@
+import "./helpers/require-test-db";
 import assert from "node:assert/strict";
 import { after, beforeEach, test } from "node:test";
 import { prisma } from "../lib/db";
