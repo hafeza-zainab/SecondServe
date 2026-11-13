@@ -82,8 +82,12 @@ export default async function DonatePage({ searchParams }: DonatePageProps) {
   const { error, posted } = form;
 
   return (
-    <main className="mx-auto min-h-screen max-w-2xl px-6 py-12">
-      <h1 className="mb-8 text-3xl font-semibold">Post a food listing</h1>
+    <main className="mx-auto min-h-screen max-w-5xl px-4 py-10 sm:px-6 sm:py-12">
+      <div className="mb-8 max-w-2xl">
+        <p className="mb-2 text-sm font-bold uppercase tracking-[0.14em] text-green-800">Share surplus</p>
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Post a food listing</h1>
+        <p className="mt-3 text-muted">Add the food and pickup details so a nearby NGO can claim it.</p>
+      </div>
 
       {posted === "1" && (
         <p className="mb-6 rounded border border-green-700 p-3" role="status" aria-live="polite">
@@ -96,24 +100,25 @@ export default async function DonatePage({ searchParams }: DonatePageProps) {
         </p>
       )}
 
-      <form id="donate-listing-form" action={createListing} className="grid gap-5">
-        <div>
+      <form id="donate-listing-form" action={createListing} className="grid gap-5 md:grid-cols-[1.15fr_0.85fr] md:gap-8">
+        <div className="md:col-span-2">
           <FillExampleButton />
         </div>
         {actingOrganization?.role === ROLES.DONOR ? (
-          <p>Posting as {actingOrganization.name}</p>
+          <p className="md:col-span-2 text-sm text-muted">Posting as <span className="font-semibold text-gray-900">{actingOrganization.name}</span></p>
         ) : (
-          <p role="alert" aria-live="assertive">Select a donor organization in the acting-as control to post.</p>
+          <p className="md:col-span-2" role="alert" aria-live="assertive">Select a donor organization in the acting-as control to post.</p>
         )}
 
+        <div className="grid content-start gap-5">
         <label className="grid gap-2">
           Food item
-          <input name="title" required defaultValue={form.title} className="rounded border p-2" />
+          <input name="title" required defaultValue={form.title} className="rounded-lg border border-line bg-panel px-3 py-2.5" />
         </label>
 
         <label className="grid gap-2">
           Food type
-          <select name="foodType" required defaultValue={form.foodType ?? ""} className="rounded border p-2">
+          <select name="foodType" required defaultValue={form.foodType ?? ""} className="rounded-lg border border-line bg-panel px-3 py-2.5">
             <option value="" disabled>Select a food type</option>
             {form.foodType && !(FOOD_TYPES as readonly string[]).includes(form.foodType) && (
               <option value={form.foodType}>{form.foodType}</option>
@@ -133,14 +138,14 @@ export default async function DonatePage({ searchParams }: DonatePageProps) {
             min="0.01"
             step="any"
             required
-            className="rounded border p-2"
+            className="rounded-lg border border-line bg-panel px-3 py-2.5"
           />
         </label>
 
         <label className="grid gap-2">
           Pickup starts
           <>
-            <input name="pickupStart" type="datetime-local" required defaultValue={form.pickupStart} aria-describedby="times-ist-hint" className="rounded border p-2" />
+            <input name="pickupStart" type="datetime-local" required defaultValue={form.pickupStart} aria-describedby="times-ist-hint" className="rounded-lg border border-line bg-panel px-3 py-2.5" />
             <span id="times-ist-hint" className="text-sm text-slate-600">Times are in IST.</span>
           </>
         </label>
@@ -148,20 +153,28 @@ export default async function DonatePage({ searchParams }: DonatePageProps) {
         <label className="grid gap-2">
           Pickup ends
           <>
-            <input name="pickupEnd" type="datetime-local" required defaultValue={form.pickupEnd} aria-describedby="times-ist-hint" className="rounded border p-2" />
+            <input name="pickupEnd" type="datetime-local" required defaultValue={form.pickupEnd} aria-describedby="times-ist-hint" className="rounded-lg border border-line bg-panel px-3 py-2.5" />
             <span className="text-sm text-slate-600">Times are in IST.</span>
           </>
         </label>
 
         <label className="grid gap-2">
           Pickup location
-          <input name="locationText" required defaultValue={form.locationText} className="rounded border p-2" />
+          <input name="locationText" required defaultValue={form.locationText} className="rounded-lg border border-line bg-panel px-3 py-2.5" />
         </label>
+        </div>
 
-        <ClaimLikelihoodPreview />
+        <aside className="surface-card h-fit bg-green-50/60 p-5 sm:p-6">
+          <p className="mb-1 text-sm font-bold uppercase tracking-wide text-green-900">Live estimate</p>
+          <h2 className="mb-4 text-xl font-bold">Claim likelihood</h2>
+          <ClaimLikelihoodPreview />
+          <p className="mt-4 text-sm leading-6 text-muted">The estimate updates as you change the food type, quantity, and pickup window. It is based on synthetic data.</p>
+        </aside>
 
         {actingOrganization?.role === ROLES.DONOR && (
-          <SubmitButton pendingText="Posting…">Post listing</SubmitButton>
+          <div className="md:col-span-2">
+            <SubmitButton pendingText="Posting…">Post listing</SubmitButton>
+          </div>
         )}
       </form>
     </main>

@@ -112,21 +112,38 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
 
             return (
               <li key={listing.id} className="surface-card p-5 sm:p-6">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <div className="mb-2 flex flex-wrap items-center gap-3">
-                      <h2 className="text-xl font-semibold">{listing.title}</h2>
+                <div className="grid gap-5 sm:grid-cols-[1fr_auto] sm:items-start">
+                  <div className="min-w-0">
+                    <div className="mb-3 flex flex-wrap items-center gap-3">
+                      <h2 className="text-xl font-bold tracking-tight">{listing.title}</h2>
                       <StatusBadge status={expired ? EXPIRED : OPEN} />
                     </div>
-                    <p>{listing.foodType} · {listing.quantityKg} kg</p>
-                    <p>Donated by {listing.donor.name} · {listing.donor.area}</p>
-                    <p>Pickup: {listing.locationText}</p>
-                    <p>Pickup deadline: {formatIst(listing.pickupEnd)}</p>
+                    <p className="text-4xl font-bold tracking-tight text-green-900">{listing.quantityKg}<span className="ml-2 text-base font-semibold text-muted">kg</span></p>
+                    <div className="mt-4 grid gap-1 text-sm text-muted">
+                      <p>{listing.foodType} · Donated by {listing.donor.name} · {listing.donor.area}</p>
+                      <p>Pickup location: {listing.locationText}</p>
+                    </div>
+                    <p className="mt-4 border-l-4 border-green-700 pl-3 text-sm font-semibold text-gray-900">
+                      Pickup deadline · {formatIst(listing.pickupEnd)} IST
+                    </p>
                     {claimProbability !== null && (
-                      <>
-                        <p>Likely to be claimed: {Math.round(claimProbability * 100)}%</p>
-                        <p className="text-sm">Estimated by a model trained on synthetic data</p>
-                      </>
+                      <div className="mt-4 max-w-md">
+                        <div className="mb-1 flex items-baseline justify-between gap-3">
+                          <p className="text-sm font-semibold">Likely to be claimed</p>
+                          <p className="text-sm font-bold text-green-900">{Math.round(claimProbability * 100)}%</p>
+                        </div>
+                        <div
+                          className="h-2.5 overflow-hidden rounded-full bg-gray-200"
+                          role="progressbar"
+                          aria-label="Estimated claim likelihood"
+                          aria-valuemin={0}
+                          aria-valuemax={100}
+                          aria-valuenow={Math.round(claimProbability * 100)}
+                        >
+                          <div className="h-full rounded-full bg-green-800" style={{ width: `${Math.round(claimProbability * 100)}%` }} />
+                        </div>
+                        <p className="mt-1 text-xs text-muted">Estimated by a model trained on synthetic data</p>
+                      </div>
                     )}
                   </div>
                   {expired ? (

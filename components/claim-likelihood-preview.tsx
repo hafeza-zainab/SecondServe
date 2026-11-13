@@ -44,7 +44,7 @@ export function ClaimLikelihoodPreview() {
   }, []);
 
   return (
-    <div id="claim-likelihood-preview" className="rounded border bg-slate-50 p-4" aria-live="polite">
+    <div id="claim-likelihood-preview" className="rounded-xl border border-green-200 bg-white p-4" aria-live="polite">
       <p className="font-medium">
         Estimated chance of being claimed: {probability === null ? "—" : `${Math.round(probability * 100)}%`}
       </p>
