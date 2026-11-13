@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "../../lib/db";
 import { ACTING_ORGANIZATION_COOKIE } from "../../lib/acting-as";
 import { ROLES } from "../../lib/constants";
+import { isValidEntityId } from "../../lib/input-limits";
 import {
   identityErrorDestination,
   sanitizeIdentityReturnTo
@@ -14,6 +15,9 @@ export async function setActingOrganization(formData: FormData) {
   const organizationId = String(formData.get("organizationId") ?? "").trim();
   const returnToValue = String(formData.get("returnTo") ?? "/");
   const returnTo = sanitizeIdentityReturnTo(returnToValue);
+  if (!isValidEntityId(organizationId)) {
+    redirect(identityErrorDestination(returnTo));
+  }
   const organization = await prisma.organization.findUnique({
     where: { id: organizationId },
     select: { role: true }

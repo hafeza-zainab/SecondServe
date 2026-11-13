@@ -1,6 +1,11 @@
 import { prisma } from "../db";
 import { CLAIMED, EXPIRED, FOOD_TYPES, OPEN, PICKED_UP, ROLES } from "../constants";
 import { parseIstLocal } from "../time";
+import {
+  isValidEntityId,
+  MAX_LOCAL_DATETIME_LENGTH,
+  MAX_QUANTITY_INPUT_LENGTH
+} from "../input-limits";
 
 export class ListingServiceError extends Error {
   constructor(readonly code: string) {
@@ -46,8 +51,18 @@ export async function createListing(
   }
 
   const quantityKg = Number(quantityValue);
-  if (!Number.isFinite(quantityKg) || quantityKg < 0.1 || quantityKg > 500) {
+  if (
+    quantityValue.length > MAX_QUANTITY_INPUT_LENGTH ||
+    !Number.isFinite(quantityKg) || quantityKg < 0.1 || quantityKg > 500
+  ) {
     throw new ListingServiceError("quantityRange");
+  }
+
+  if (
+    pickupStartValue.length > MAX_LOCAL_DATETIME_LENGTH ||
+    pickupEndValue.length > MAX_LOCAL_DATETIME_LENGTH
+  ) {
+    throw new ListingServiceError("date");
   }
 
   let pickupStart: Date;
@@ -66,6 +81,10 @@ export async function createListing(
   }
   if (pickupEnd.getTime() - Date.now() > 14 * 24 * 60 * 60 * 1000) {
     throw new ListingServiceError("deadlineTooFar");
+  }
+
+  if (!isValidEntityId(actingOrganizationId)) {
+    throw new ListingServiceError("donor");
   }
 
   const donor = await prisma.organization.findUnique({
@@ -94,7 +113,7 @@ export async function claimListing(
   listingId: string,
   actingOrganizationId: string | null
 ): Promise<"Claimed" | "Already claimed or expired" | "Invalid NGO"> {
-  if (!listingId || !actingOrganizationId) {
+  if (!isValidEntityId(listingId) || !isValidEntityId(actingOrganizationId)) {
     return "Invalid NGO";
   }
 
@@ -135,11 +154,11 @@ export async function markPickedUp(
   listingId: string,
   actingOrganizationId: string | null
 ): Promise<"Picked up" | "Already picked up or not claimed" | "Not owner"> {
-  return prisma.$transaction(async (tx) => {
-    if (!actingOrganizationId) {
-      return "Not owner";
-    }
+  if (!isValidEntityId(listingId) || !isValidEntityId(actingOrganizationId)) {
+    return "Not owner";
+  }
 
+  return prisma.$transaction(async (tx) => {
     const [listing, actingOrganization] = await Promise.all([
       tx.listing.findUnique({
         where: { id: listingId },

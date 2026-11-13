@@ -1,3 +1,5 @@
+import { MAX_IDENTITY_RETURN_TO_LENGTH } from "./input-limits";
+
 const INTERNAL_ORIGIN = "https://secondserve.invalid";
 const ALLOWED_IDENTITY_ROUTES = new Set([
   "/",
@@ -9,7 +11,12 @@ const ALLOWED_IDENTITY_ROUTES = new Set([
 ]);
 
 export function sanitizeIdentityReturnTo(value: string): string {
-  if (!value.startsWith("/") || value.startsWith("//") || value.includes("\\")) {
+  if (
+    value.length > MAX_IDENTITY_RETURN_TO_LENGTH ||
+    !value.startsWith("/") ||
+    value.startsWith("//") ||
+    value.includes("\\")
+  ) {
     return "/";
   }
 
