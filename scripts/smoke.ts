@@ -3,7 +3,7 @@ import { createServer } from "node:net";
 import { resolve } from "node:path";
 
 const routes = [
-  ["/", "SecondServe"],
+  ["/", "Try the demo"],
   ["/donate", "Post a food listing"],
   ["/listings", "Available listings"],
   ["/dashboard", "Impact dashboard"],
