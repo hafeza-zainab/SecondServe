@@ -65,7 +65,7 @@ npm run train
 
 ## Limits
 
-- Data is sample data. The hosted demo uses an ephemeral SQLite file, so data can reset after a server restart or redeploy; the first hosted load may take about a minute.
+- On the hosted demo, data resets when the server restarts or redeploys, and the first load can take about a minute.
 - The claim predictor is trained only on synthetic data. It makes no real-world accuracy claim.
 - The acting-as selector is a demo identity control, not real authentication.
 - The sample workflow does not establish real-world food safety, availability, or impact results.

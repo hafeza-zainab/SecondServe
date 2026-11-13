@@ -15,7 +15,7 @@ export const METRICS = [
 ] as const;
 
 export const LIMITS = [
-  "The app uses sample data, and the local SQLite database resets when the server restarts.",
+  "On the hosted demo, data resets when the server restarts or redeploys, and the first load can take about a minute.",
   "The claim-likelihood model uses synthetic data and makes no real-world accuracy claim.",
   "The acting-as selector is a demo identity control; the app has no real authentication."
 ] as const;
