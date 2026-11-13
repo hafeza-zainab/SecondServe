@@ -61,7 +61,7 @@ export default async function MyPage({ searchParams }: MyPageProps) {
 
     return (
       <main className="mx-auto min-h-screen max-w-4xl px-4 py-12 sm:px-6">
-        <h1 className="mb-2 text-3xl font-semibold">My listings</h1>
+        <h1 className="mb-2 text-3xl font-bold tracking-tight">My listings</h1>
         <p className="mb-8 text-slate-700">Listings posted by {actingOrganization.name}.</p>
         {resultMessage && <p className="mb-6 rounded border p-3" role="status" aria-live="polite">{resultMessage}</p>}
         {listings.length === 0 ? (
@@ -69,10 +69,10 @@ export default async function MyPage({ searchParams }: MyPageProps) {
         ) : (
           <ul className="grid gap-4">
             {listings.map((listing) => (
-              <li key={listing.id} className="rounded border p-5">
+              <li key={listing.id} className="surface-card p-5 sm:p-6">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
-                    <h2 className="text-xl font-semibold">{listing.title}</h2>
+                    <h2 className="text-xl font-bold tracking-tight">{listing.title}</h2>
                     <p>{listing.foodType} · {listing.quantityKg} kg · {listing.locationText}</p>
                     <p>Pickup window: {formatIst(listing.pickupStart)}–{formatIst(listing.pickupEnd)}</p>
                     <p className="mt-3 flex items-center gap-2 text-sm"><span>Status:</span><StatusBadge status={listing.status} /></p>
@@ -108,15 +108,15 @@ export default async function MyPage({ searchParams }: MyPageProps) {
 
     return (
       <main className="mx-auto min-h-screen max-w-4xl px-4 py-12 sm:px-6">
-        <h1 className="mb-2 text-3xl font-semibold">My claims</h1>
+        <h1 className="mb-2 text-3xl font-bold tracking-tight">My claims</h1>
         <p className="mb-8 text-slate-700">Claims made by {actingOrganization.name}.</p>
         {claims.length === 0 ? (
           <p>No claims yet. <a className="underline" href="/listings">Browse listings</a>.</p>
         ) : (
           <ul className="grid gap-4">
             {claims.map((claim) => (
-              <li key={claim.id} className="rounded border p-5">
-                <h2 className="text-xl font-semibold">{claim.listing.title}</h2>
+              <li key={claim.id} className="surface-card p-5 sm:p-6">
+                <h2 className="text-xl font-bold tracking-tight">{claim.listing.title}</h2>
                 <p>{claim.listing.quantityKg} kg · {claim.listing.foodType}</p>
                 <p>Donated by {claim.listing.donor.name}</p>
                 <p>Claimed at {formatIst(claim.claimedAt)}</p>

@@ -97,8 +97,11 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const maxDailyKg = Math.max(...metrics.pickedUpByDay.map((day) => day.quantityKg), 0);
 
   return (
-    <main className="mx-auto min-h-screen max-w-5xl px-6 py-12">
-      <h1 className="mb-8 text-3xl font-semibold">Impact dashboard</h1>
+    <main className="mx-auto min-h-screen max-w-6xl px-4 py-10 sm:px-6 sm:py-12">
+      <div className="mb-8">
+        <p className="mb-2 text-sm font-bold uppercase tracking-[0.14em] text-green-800">Sample impact</p>
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Impact dashboard</h1>
+      </div>
 
       {message === "picked-up" && (
         <p className="mb-6 rounded border border-green-700 p-3" role="status" aria-live="polite">
@@ -117,89 +120,89 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       )}
 
       <section className="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <article className="rounded border p-5">
-          <h2 className="text-sm">kg picked up</h2>
-          <p className="mt-2 text-3xl font-semibold">
+        <article className="surface-card border-green-200 bg-green-50 p-5 sm:p-6">
+          <h2 className="text-xs font-bold uppercase tracking-wide text-green-950">kg picked up</h2>
+          <p className="mt-3 text-4xl font-bold tracking-tight text-green-950 sm:text-5xl">
             {metrics.pickedUpKg.toLocaleString(undefined, { maximumFractionDigits: 2 })} kg
           </p>
         </article>
-        <article className="rounded border p-5">
-          <h2 className="text-sm">kg with a final outcome</h2>
-          <p className="mt-2 text-3xl font-semibold">
+        <article className="surface-card p-5 sm:p-6">
+          <h2 className="text-xs font-bold uppercase tracking-wide text-muted">kg with a final outcome</h2>
+          <p className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
             {metrics.kgWithFinalOutcome.toLocaleString(undefined, { maximumFractionDigits: 2 })} kg
           </p>
           <p className="mt-1 text-sm text-slate-600">Picked up, expired, or claimed but not collected.</p>
         </article>
-        <article className="rounded border p-5">
-          <h2 className="text-sm">Rescue rate</h2>
-          <p className="mt-2 text-3xl font-semibold">
+        <article className="surface-card p-5 sm:p-6">
+          <h2 className="text-xs font-bold uppercase tracking-wide text-muted">Rescue rate</h2>
+          <p className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
             {metrics.rescueRate === null ? "—" : `${Math.round(metrics.rescueRate * 100)}%`}
           </p>
           <p className="mt-1 text-sm text-slate-600">Picked-up kg divided by posted kg.</p>
         </article>
-        <article className="rounded border p-5">
-          <h2 className="text-sm">Meals equivalent</h2>
-          <p className="mt-2 text-3xl font-semibold">
+        <article className="surface-card p-5 sm:p-6">
+          <h2 className="text-xs font-bold uppercase tracking-wide text-muted">Meals equivalent</h2>
+          <p className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
             {metrics.mealsEquivalent.toLocaleString(undefined, { maximumFractionDigits: 1 })}
           </p>
           <p className="mt-1 text-sm text-slate-600">Estimate, assumption not measured ({MEAL_KG} kg per meal).</p>
         </article>
-        <article className="rounded border p-5">
-          <h2 className="text-sm">kg claimed, awaiting pickup</h2>
-          <p className="mt-2 text-3xl font-semibold">
+        <article className="surface-card p-5 sm:p-6">
+          <h2 className="text-xs font-bold uppercase tracking-wide text-muted">kg claimed, awaiting pickup</h2>
+          <p className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
             {metrics.claimedKg.toLocaleString(undefined, { maximumFractionDigits: 2 })} kg
           </p>
         </article>
-        <article className="rounded border p-5">
-          <h2 className="text-sm">kg claimed but not collected</h2>
-          <p className="mt-2 text-3xl font-semibold">
+        <article className="surface-card p-5 sm:p-6">
+          <h2 className="text-xs font-bold uppercase tracking-wide text-muted">kg claimed but not collected</h2>
+          <p className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
             {metrics.uncollectedKg.toLocaleString(undefined, { maximumFractionDigits: 2 })} kg
           </p>
         </article>
-        <article className="rounded border p-5">
-          <h2 className="text-sm">Claim rate</h2>
-          <p className="mt-2 text-3xl font-semibold">
+        <article className="surface-card p-5 sm:p-6">
+          <h2 className="text-xs font-bold uppercase tracking-wide text-muted">Claim rate</h2>
+          <p className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
             {metrics.claimRate === null ? "—" : `${Math.round(metrics.claimRate * 100)}%`}
           </p>
         </article>
-        <article className="rounded border p-5">
-          <h2 className="text-sm">Median time to claim</h2>
-          <p className="mt-2 text-3xl font-semibold">
+        <article className="surface-card p-5 sm:p-6">
+          <h2 className="text-xs font-bold uppercase tracking-wide text-muted">Median time to claim</h2>
+          <p className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
             {metrics.medianClaimHours === null
               ? "—"
               : `${metrics.medianClaimHours.toLocaleString(undefined, { maximumFractionDigits: 1 })} hours`}
           </p>
         </article>
-        <article className="rounded border p-5">
-          <h2 className="text-sm">Claims</h2>
-          <p className="mt-2 text-3xl font-semibold">{claimCount}</p>
+        <article className="surface-card p-5 sm:p-6">
+          <h2 className="text-xs font-bold uppercase tracking-wide text-muted">Claims</h2>
+          <p className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">{claimCount}</p>
         </article>
-        <article className="rounded border p-5">
-          <h2 className="text-sm">Participating donors</h2>
-          <p className="mt-2 text-3xl font-semibold">{donorCount}</p>
+        <article className="surface-card p-5 sm:p-6">
+          <h2 className="text-xs font-bold uppercase tracking-wide text-muted">Participating donors</h2>
+          <p className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">{donorCount}</p>
         </article>
-        <article className="rounded border p-5">
-          <h2 className="text-sm">Participating NGOs</h2>
-          <p className="mt-2 text-3xl font-semibold">{ngoCount}</p>
+        <article className="surface-card p-5 sm:p-6">
+          <h2 className="text-xs font-bold uppercase tracking-wide text-muted">Participating NGOs</h2>
+          <p className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">{ngoCount}</p>
         </article>
       </section>
 
-      <section className="mb-10 rounded border p-5">
-        <h2 className="mb-4 text-xl font-semibold">kg picked up per day · last 7 days</h2>
+      <section className="surface-card mb-10 p-5 sm:p-6">
+        <h2 className="mb-5 text-xl font-bold tracking-tight sm:text-2xl">kg picked up per day · last 7 days</h2>
         {!metrics.hasClaims ? (
           <p>No impact data yet. Claims and pickups will appear here.</p>
         ) : (
           <div className="grid gap-3">
             {metrics.pickedUpByDay.map((day) => (
               <div key={day.date} className="grid grid-cols-[4rem_1fr_5rem] items-center gap-3">
-                <span>{day.label}</span>
-                <div className="h-4 rounded bg-slate-100">
+                <span className="text-sm font-medium text-muted">{day.label}</span>
+                <div className="h-3 overflow-hidden rounded-full bg-gray-100">
                   <div
-                    className="h-4 rounded bg-green-700"
+                    className="h-full rounded-full bg-green-800"
                     style={{ width: `${maxDailyKg ? (day.quantityKg / maxDailyKg) * 100 : 0}%` }}
                   />
                 </div>
-                <span className="text-right">{day.quantityKg.toLocaleString(undefined, { maximumFractionDigits: 2 })} kg</span>
+                <span className="text-right text-sm font-bold text-gray-900">{day.quantityKg.toLocaleString(undefined, { maximumFractionDigits: 2 })} kg</span>
               </div>
             ))}
           </div>
@@ -208,13 +211,13 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       <p className="mb-10 text-sm text-slate-600">Figures from sample data.</p>
 
       <section>
-        <h2 className="mb-4 text-2xl font-semibold">Latest claims</h2>
+        <h2 className="mb-4 text-2xl font-bold tracking-tight">Latest claims</h2>
         {claimCount === 0 ? (
           <p>No claims yet. Once an NGO claims a listing, it will appear here.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[40rem] border-collapse text-left">
-              <thead>
+              <thead className="sticky top-0 z-10 bg-gray-50 shadow-sm">
                 <tr className="border-b">
                   <th className="p-3">Listing</th>
                   <th className="p-3">Quantity</th>
@@ -225,7 +228,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
               </thead>
               <tbody>
                 {latestClaims.map((claim) => (
-                  <tr key={claim.id} className="border-b">
+                  <tr key={claim.id} className="border-b border-line transition-colors hover:bg-green-50/60">
                     <td className="p-3">{claim.listing.title}</td>
                     <td className="p-3">{claim.listing.quantityKg} kg</td>
                     <td className="p-3">{claim.ngo.name}</td>
@@ -240,7 +243,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                         actingOrganization.id === claim.listing.donorId ? (
                           <form action={markPickedUp}>
                             <input type="hidden" name="listingId" value={claim.listingId} />
-                            <SubmitButton pendingText="Saving…" className="rounded bg-black px-3 py-2 text-white">
+                            <SubmitButton pendingText="Saving…" className="button-primary min-h-0 px-3 py-2 text-sm">
                               Mark picked up
                             </SubmitButton>
                           </form>
