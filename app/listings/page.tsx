@@ -81,7 +81,8 @@ const messages: Record<string, { text: string; role: "status" | "alert" }> = {
 };
 
 export default async function ListingsPage({ searchParams }: ListingsPageProps) {
-  const [{ message }, [listings, ngos]] = await Promise.all([
+  const now = new Date();
+  const [{ message }, [foundListings, ngos]] = await Promise.all([
     searchParams,
     Promise.all([
       prisma.listing.findMany({
@@ -98,7 +99,14 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
       })
     ])
   ]);
-  const now = new Date();
+  const listings = [...foundListings].sort((left, right) => {
+    const leftExpired = left.status === EXPIRED || left.pickupEnd <= now;
+    const rightExpired = right.status === EXPIRED || right.pickupEnd <= now;
+    if (leftExpired !== rightExpired) {
+      return leftExpired ? 1 : -1;
+    }
+    return left.pickupEnd.getTime() - right.pickupEnd.getTime();
+  });
   const resultMessage = message ? messages[message] : undefined;
 
   return (
