@@ -35,13 +35,19 @@ export async function createListing(
   ) {
     throw new ListingServiceError("missing");
   }
+  if (title.length > 80) {
+    throw new ListingServiceError("titleTooLong");
+  }
+  if (locationText.length > 120) {
+    throw new ListingServiceError("locationTooLong");
+  }
   if (!(FOOD_TYPES as readonly string[]).includes(foodType)) {
     throw new ListingServiceError("foodType");
   }
 
   const quantityKg = Number(quantityValue);
-  if (!Number.isFinite(quantityKg) || quantityKg <= 0) {
-    throw new ListingServiceError("quantity");
+  if (!Number.isFinite(quantityKg) || quantityKg < 0.1 || quantityKg > 500) {
+    throw new ListingServiceError("quantityRange");
   }
 
   let pickupStart: Date;
@@ -57,6 +63,9 @@ export async function createListing(
   }
   if (pickupEnd <= new Date()) {
     throw new ListingServiceError("future");
+  }
+  if (pickupEnd.getTime() - Date.now() > 14 * 24 * 60 * 60 * 1000) {
+    throw new ListingServiceError("deadlineTooFar");
   }
 
   const donor = await prisma.organization.findUnique({

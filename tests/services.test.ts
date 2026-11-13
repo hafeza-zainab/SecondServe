@@ -4,7 +4,9 @@ import { prisma } from "../lib/db";
 import { CLAIMED, EXPIRED, OPEN, PICKED_UP, ROLES } from "../lib/constants";
 import {
   claimListing,
+  createListing as createListingService,
   expireOverdueListings,
+  ListingServiceError,
   markPickedUp
 } from "../lib/services/listings";
 
@@ -39,10 +41,108 @@ async function createListing(
   });
 }
 
+function istLocalValue(date: Date) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23"
+  }).formatToParts(date);
+  const value = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
+  return `${value.year}-${value.month}-${value.day}T${value.hour}:${value.minute}`;
+}
+
+function createInput(overrides: Partial<Parameters<typeof createListingService>[0]> = {}) {
+  const start = new Date(Date.now() + 30 * 60 * 1000);
+  const end = new Date(Date.now() + 60 * 60 * 1000);
+  return {
+    title: "Limit test food (sample)",
+    foodType: "Produce",
+    quantityKg: "10",
+    pickupStart: istLocalValue(start),
+    pickupEnd: istLocalValue(end),
+    locationText: "Limit test location (sample)",
+    ...overrides
+  };
+}
+
+async function rejectsWithCode(promise: Promise<unknown>, code: string) {
+  await assert.rejects(promise, (error: unknown) => {
+    assert.ok(error instanceof ListingServiceError);
+    assert.equal(error.code, code);
+    return true;
+  });
+}
+
 beforeEach(clearDatabase);
 after(async () => {
   await clearDatabase();
   await prisma.$disconnect();
+});
+
+test("createListing accepts an 80-character title and rejects 81 characters", async () => {
+  const donor = await createOrganization(ROLES.DONOR);
+  const accepted = await createListingService(
+    createInput({ title: "t".repeat(80) }),
+    donor.id
+  );
+  assert.equal(accepted.title.length, 80);
+  await rejectsWithCode(
+    createListingService(createInput({ title: "t".repeat(81) }), donor.id),
+    "titleTooLong"
+  );
+});
+
+test("createListing accepts a 120-character location and rejects 121 characters", async () => {
+  const donor = await createOrganization(ROLES.DONOR);
+  const accepted = await createListingService(
+    createInput({ locationText: "l".repeat(120) }),
+    donor.id
+  );
+  assert.equal(accepted.locationText.length, 120);
+  await rejectsWithCode(
+    createListingService(createInput({ locationText: "l".repeat(121) }), donor.id),
+    "locationTooLong"
+  );
+});
+
+test("createListing accepts 0.1 and 500 kg and rejects values outside the range", async () => {
+  const donor = await createOrganization(ROLES.DONOR);
+  assert.equal(
+    (await createListingService(createInput({ quantityKg: "0.1" }), donor.id)).quantityKg,
+    0.1
+  );
+  assert.equal(
+    (await createListingService(createInput({ quantityKg: "500" }), donor.id)).quantityKg,
+    500
+  );
+  await rejectsWithCode(
+    createListingService(createInput({ quantityKg: "0.099" }), donor.id),
+    "quantityRange"
+  );
+  await rejectsWithCode(
+    createListingService(createInput({ quantityKg: "500.01" }), donor.id),
+    "quantityRange"
+  );
+});
+
+test("createListing accepts a pickup end inside 14 days and rejects one beyond", async () => {
+  const donor = await createOrganization(ROLES.DONOR);
+  const inside = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000 - 60 * 60 * 1000);
+  const accepted = await createListingService(
+    createInput({ pickupEnd: istLocalValue(inside) }),
+    donor.id
+  );
+  assert.ok(accepted.pickupEnd.getTime() - Date.now() <= 14 * 24 * 60 * 60 * 1000);
+
+  const outside = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000 + 60 * 60 * 1000);
+  await rejectsWithCode(
+    createListingService(createInput({ pickupEnd: istLocalValue(outside) }), donor.id),
+    "deadlineTooFar"
+  );
 });
 
 test("a listing can be claimed once and the duplicate creates no second claim", async () => {
